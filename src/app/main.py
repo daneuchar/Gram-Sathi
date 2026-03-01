@@ -18,7 +18,8 @@ async def health():
 
 
 # Routers registered by individual feature tasks:
-# from app.routers import webhooks, voice, dashboard
+# from app.routers import webhooks, dashboard
 # app.include_router(webhooks.router)
-# app.include_router(voice.router)
 # app.include_router(dashboard.router)
+from app.routers import voice
+app.include_router(voice.router)
