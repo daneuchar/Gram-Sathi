@@ -1,0 +1,2 @@
+API_BASE = "http://localhost:8000"
+POLL_INTERVAL_SECONDS = 3
