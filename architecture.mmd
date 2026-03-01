@@ -1,0 +1,64 @@
+%%{ init: { "theme": "base", "themeVariables": { "fontSize": "14px" } } }%%
+flowchart TD
+    %% ━━━ USER ━━━
+    Farmer["📱 Farmer"]
+
+    %% ━━━ TELEPHONY ━━━
+    Exotel["📞 Exotel Cloud Telephony"]
+
+    %% ━━━ VOICE PIPELINE ━━━
+    subgraph VoicePipeline["🔵 Voice Pipeline"]
+        direction LR
+        ASR["🎙️ Sarvam ASR"] --> Claude["🧠 Bedrock Claude"] --> TTS["🔊 Sarvam TTS"]
+    end
+
+    %% ━━━ TOOLS ━━━
+    subgraph AgentTools["🔴 Agent Tools"]
+        Mandi["🛒 Mandi Prices"]
+        Weather["☁️ Weather"]
+        Scheme["📋 Scheme Matcher"]
+        Crop["🌿 Crop Advisory"]
+        PMKISAN["💳 PM-KISAN"]
+    end
+
+    %% ━━━ DATA ━━━
+    subgraph Data["⬜ Data"]
+        AWS["☁️ AWS"]
+        GovtAPIs["🌐 Govt APIs"]
+        PostgreSQL["🗄️ PostgreSQL"]
+        Redis["⚡ Redis"]
+    end
+
+    %% ━━━ OUTPUTS ━━━
+    Alerts["⚠️ Proactive Alerts"]
+    Dashboard["📊 Streamlit Dashboard"]
+
+    %% ━━━ CONNECTIONS ━━━
+    Farmer <-->|"Missed Call + Voice"| Exotel
+    Exotel <-->|"WebSocket Audio"| VoicePipeline
+    Claude -->|"Function Calling"| AgentTools
+    AgentTools -->|"API Calls"| Data
+    Data --> Alerts
+    Data --> Dashboard
+    Alerts -.->|"Outbound Call"| Exotel
+
+    %% ━━━ STYLES ━━━
+    style Farmer fill:#f97316,stroke:#ea580c,color:#fff
+    style Exotel fill:#22c55e,stroke:#16a34a,color:#fff
+    style VoicePipeline fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    style ASR fill:#3b82f6,stroke:#2563eb,color:#fff
+    style Claude fill:#eab308,stroke:#ca8a04,color:#000
+    style TTS fill:#3b82f6,stroke:#2563eb,color:#fff
+    style AgentTools fill:#fee2e2,stroke:#ef4444,color:#7f1d1d
+    style Mandi fill:#ef4444,stroke:#dc2626,color:#fff
+    style Weather fill:#ef4444,stroke:#dc2626,color:#fff
+    style Scheme fill:#ef4444,stroke:#dc2626,color:#fff
+    style Crop fill:#ef4444,stroke:#dc2626,color:#fff
+    style PMKISAN fill:#ef4444,stroke:#dc2626,color:#fff
+    style Data fill:#f3f4f6,stroke:#9ca3af,color:#374151
+    style AWS fill:#eab308,stroke:#ca8a04,color:#000
+    style GovtAPIs fill:#a855f7,stroke:#9333ea,color:#fff
+    style PostgreSQL fill:#6b7280,stroke:#4b5563,color:#fff
+    style Redis fill:#ef4444,stroke:#dc2626,color:#fff
+    style Alerts fill:#ef4444,stroke:#dc2626,color:#fff
+    style Dashboard fill:#3b82f6,stroke:#2563eb,color:#fff
