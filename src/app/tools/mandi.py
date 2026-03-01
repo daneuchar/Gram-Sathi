@@ -18,7 +18,7 @@ def get_mandi_prices(commodity: str, state: str, district: str) -> dict:
                 "format": "json",
                 "limit": 5,
                 "filters[commodity]": commodity,
-                "filters[state]": state,
+                "filters[state.keyword]": state,   # API requires state.keyword for filtering
                 "filters[district]": district,
             },
             timeout=15,
