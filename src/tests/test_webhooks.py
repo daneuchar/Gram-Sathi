@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -12,6 +12,7 @@ from app.database import get_db
 def _override_db():
     mock_session = AsyncMock()
     mock_session.get = AsyncMock(return_value=None)
+    mock_session.add = MagicMock()  # session.add() is sync in SQLAlchemy
 
     async def _fake_db():
         yield mock_session
