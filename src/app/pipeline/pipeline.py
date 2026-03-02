@@ -3,6 +3,8 @@ import logging
 import re
 from collections.abc import Callable, Awaitable
 
+import numpy as np
+
 from num2words import num2words
 
 from app.pipeline.nova_client import NovaClient
@@ -40,6 +42,37 @@ def _expand_numbers(text: str) -> str:
         except Exception:
             return m.group()
     return _NUMBER_RE.sub(_replace, text)
+
+
+_SENTENCE_RE = re.compile(r'(?<=[.!?।])\s+')
+
+
+def _split_sentences(text: str) -> list[str]:
+    """Split text into sentences on . ! ? ।  Returns [text] if no split found."""
+    parts = [s.strip() for s in _SENTENCE_RE.split(text) if s.strip()]
+    return parts if parts else [text]
+
+
+async def _translate_and_tts(
+    sentence: str,
+    detected_lang: str,
+    is_english: bool,
+    q: asyncio.Queue,
+    sample_rate: int = 8000,
+) -> None:
+    """Translate one sentence and synthesize it.
+
+    Puts (sample_rate, np.ndarray) chunks into q, then puts None sentinel.
+    """
+    try:
+        text = sentence if is_english else await from_english(sentence, detected_lang)
+        async for chunk in synthesize_streaming(text, detected_lang, sample_rate=sample_rate):
+            arr = np.frombuffer(chunk, dtype=np.int16).copy()
+            await q.put((sample_rate, arr))
+    except Exception:
+        logger.exception("_translate_and_tts error for: %r", sentence)
+    finally:
+        await q.put(None)  # per-sentence sentinel — always emitted even on error
 
 
 async def process_turn(
@@ -114,3 +147,85 @@ async def process_turn(
             await audio_send_callback(audio_chunk)
 
     return (english_transcript, detected_lang, english_response)
+
+
+async def process_turn_streaming(
+    audio_bytes: bytes,
+    farmer_profile: dict | None,
+    conversation_history: list[dict],
+    language_code: str,
+    audio_queue: asyncio.Queue,
+    sample_rate: int = 8000,
+) -> tuple[str, str, str]:
+    """Process one voice turn with sentence-level parallel TTS pipelining.
+
+    Puts (sample_rate, np.ndarray) tuples into audio_queue as audio becomes available.
+    Puts a final None sentinel when the turn is fully done.
+    Returns (english_transcript, detected_lang, english_response).
+    """
+    if not audio_bytes:
+        await audio_queue.put(None)
+        return ("", language_code, "")
+
+    is_english = language_code in ENGLISH_LANGS
+
+    # 1. ASR
+    asr_result = await transcribe(
+        audio_bytes,
+        language_code,
+        mode="transcribe" if is_english else "translate",
+    )
+    transcript = asr_result["transcript"]
+    detected_lang = asr_result["language_code"]
+
+    if not transcript.strip():
+        await audio_queue.put(None)
+        return ("", detected_lang, "")
+
+    is_english = detected_lang in ENGLISH_LANGS
+
+    # 2. Filler — pre-generated file, 0ms
+    filler = get_filler_audio(detected_lang, sample_rate=sample_rate)
+    if filler:
+        arr = np.frombuffer(filler, dtype=np.int16).copy()
+        await audio_queue.put((sample_rate, arr))
+
+    # 3. Nova — non-streaming, handles tool calls correctly
+    messages = list(conversation_history)
+    messages.append({"role": "user", "content": [{"text": transcript}]})
+    english_response = await nova_client.generate(
+        user_text="",
+        conversation_history=messages,
+        tools=NOVA_TOOLS,
+        tool_executor=execute_tool,
+    )
+
+    if not english_response or isinstance(english_response, dict):
+        await audio_queue.put(None)
+        return (transcript, detected_lang, "")
+
+    english_response = _expand_numbers(english_response)
+
+    # 4. Sentence-level parallel translate + TTS
+    sentences = _split_sentences(english_response)
+
+    # Each sentence gets its own queue — start all tasks simultaneously, drain in order
+    sent_queues: list[asyncio.Queue] = [asyncio.Queue() for _ in sentences]
+    tasks = [
+        asyncio.create_task(
+            _translate_and_tts(sent, detected_lang, is_english, sent_queues[i], sample_rate)
+        )
+        for i, sent in enumerate(sentences)
+    ]
+
+    # Drain each sentence queue in order; sentence N+1 may already be ready while N plays
+    for q in sent_queues:
+        while True:
+            item = await q.get()
+            if item is None:
+                break
+            await audio_queue.put(item)
+
+    await asyncio.gather(*tasks)  # ensure all tasks are cleaned up
+    await audio_queue.put(None)   # turn-level sentinel
+    return (transcript, detected_lang, english_response)
