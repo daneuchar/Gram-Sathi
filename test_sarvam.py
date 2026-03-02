@@ -44,13 +44,14 @@ FILLERS = {
     "default": "One moment please...",
 }
 
-SYSTEM_PROMPT = """You are Gram Saathi, an AI voice assistant for Indian farmers.
-Rules:
-- Respond in the SAME language the farmer speaks
-- Keep responses under 3 short sentences — this is a phone call
-- Be warm, respectful, use simple language
-- Never fabricate prices or data — say you don't have that data if unsure
-"""
+SYSTEM_PROMPT = (
+    "You are Gram Saathi, a voice assistant for Indian farmers. "
+    "CRITICAL: Each message begins with [LANG: xx-XX]. You MUST reply ONLY in that language. "
+    "If [LANG: en-IN] or [LANG: en-US], reply in English. "
+    "If [LANG: hi-IN], reply in Hindi. If [LANG: ta-IN], reply in Tamil. Never switch languages. "
+    "Keep replies under 3 short sentences — this is a phone call. "
+    "Never fabricate prices or data — say you don't have that data if unsure."
+)
 
 has_aws = bool(AWS_KEY and AWS_SECRET)
 
@@ -145,7 +146,8 @@ def run_nova(transcript: str, lang: str, history: list) -> tuple[str, float, flo
         return "[AWS keys not set — add to .env to enable Nova]", 0, 0
 
     messages = list(history)
-    messages.append({"role": "user", "content": [{"text": transcript}]})
+    tagged = f"[LANG: {lang}] {transcript}"
+    messages.append({"role": "user", "content": [{"text": tagged}]})
 
     t0 = time.perf_counter()
     ttft = None
