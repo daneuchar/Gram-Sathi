@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
     aws_default_region: str = "ap-south-1"
-    bedrock_model_id: str = "amazon.nova-lite-v1:0"
+    bedrock_model_id: str = "global.amazon.nova-2-lite-v1:0"
 
     # Sarvam AI
     sarvam_api_key: str = ""
