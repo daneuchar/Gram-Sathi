@@ -32,6 +32,10 @@ stream = Stream(
 )
 stream.mount(app)
 
+# Mount the Gradio UI at / for the browser demo
+import gradio as gr
+gr.mount_gradio_app(app, stream._ui, path="/demo")
+
 from app.routers import webhooks, dashboard
 app.include_router(webhooks.router)
 app.include_router(dashboard.router)
