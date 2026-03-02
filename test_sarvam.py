@@ -34,7 +34,7 @@ BEDROCK_MODEL   = os.environ.get("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 SARVAM_HEADERS  = {"api-subscription-key": SARVAM_API_KEY}
 RECORD_SR       = 16000   # mic sample rate
-TTS_SR          = 8000    # Sarvam TTS output sample rate
+TTS_SR          = 22050   # bulbul:v3 — 22050Hz for natural local playback (8000 for phone calls)
 
 FILLERS = {
     "hi-IN": "Haan ji, ek second...",
@@ -117,17 +117,30 @@ def run_asr(wav_bytes: bytes) -> tuple[str, str, float]:
 
 
 def run_tts(text: str, lang: str) -> tuple[bytes, float]:
-    """Returns (pcm_bytes, latency_ms)."""
-    speaker = {"hi-IN": "anushka", "ta-IN": "anushka", "te-IN": "abhilash",
-               "mr-IN": "manisha", "kn-IN": "vidya"}.get(lang, "anushka")
+    """Returns (pcm_bytes, latency_ms). Uses bulbul:v3 for natural Indian voices."""
+    # bulbul:v3 language-specific speakers
+    speaker = {
+        "hi-IN": "kavya",      # Hindi female — warm, natural
+        "ta-IN": "kavitha",    # Tamil female — native Tamil speaker
+        "te-IN": "gokul",      # Telugu male — native Telugu speaker
+        "mr-IN": "roopa",      # Marathi female
+        "kn-IN": "shruti",     # Kannada female
+        "bn-IN": "kabir",      # Bengali male
+        "en-IN": "anand",      # English Indian accent
+        "en-US": "anand",
+    }.get(lang, "kavya")
     t0 = time.perf_counter()
     resp = httpx.post(
         "https://api.sarvam.ai/text-to-speech",
         headers=SARVAM_HEADERS,
         json={
-            "inputs": [text], "target_language_code": lang, "speaker": speaker,
-            "pace": 0.9, "speech_sample_rate": TTS_SR, "model": "bulbul:v2",
-            "enable_preprocessing": True,
+            "inputs": [text],
+            "target_language_code": lang,
+            "speaker": speaker,
+            "pace": 1.0,               # natural pace
+            "speech_sample_rate": TTS_SR,
+            "model": "bulbul:v3",
+            "temperature": 0.8,        # higher = more expressive, less robotic
         },
         timeout=30,
     )
