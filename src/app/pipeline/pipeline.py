@@ -218,14 +218,18 @@ async def process_turn_streaming(
         for i, sent in enumerate(sentences)
     ]
 
-    # Drain each sentence queue in order; sentence N+1 may already be ready while N plays
-    for q in sent_queues:
-        while True:
-            item = await q.get()
-            if item is None:
-                break
-            await audio_queue.put(item)
-
-    await asyncio.gather(*tasks)  # ensure all tasks are cleaned up
+    try:
+        # Drain each sentence queue in order; sentence N+1 may already be ready while N plays
+        for q in sent_queues:
+            while True:
+                item = await q.get()
+                if item is None:
+                    break
+                await audio_queue.put(item)
+    finally:
+        # Cancel any tasks still running (e.g. if this coroutine is cancelled on client disconnect)
+        for t in tasks:
+            t.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
     await audio_queue.put(None)   # turn-level sentinel
     return (transcript, detected_lang, english_response)
