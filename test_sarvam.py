@@ -99,13 +99,20 @@ def play_audio(pcm_bytes: bytes, sr: int = TTS_SR):
 
 # ── Pipeline steps ────────────────────────────────────────────────────────────
 
-def run_asr(wav_bytes: bytes) -> tuple[str, str, float]:
-    """Returns (transcript, language_code, latency_ms)."""
+def run_asr(wav_bytes: bytes, mode: str = "translate") -> tuple[str, str, float]:
+    """ASR with saaras:v3.
+
+    mode='translate'  → returns English directly (ASR + translate in one call)
+    mode='transcribe' → returns transcript in detected language
+
+    Returns (transcript, detected_language_code, latency_ms).
+    """
     t0 = time.perf_counter()
     resp = httpx.post(
         "https://api.sarvam.ai/speech-to-text",
         headers=SARVAM_HEADERS,
-        data={"model": "saaras:v3", "language_code": "unknown", "with_timestamps": "false"},
+        data={"model": "saaras:v3", "language_code": "unknown",
+              "with_timestamps": "false", "mode": mode},
         files={"file": ("audio.wav", io.BytesIO(wav_bytes), "audio/wav")},
         timeout=30,
     )
@@ -236,27 +243,19 @@ def main():
 
         t_turn_start = time.perf_counter()
 
-        # ── 2. ASR ────────────────────────────────────────────────────────────
-        print("⏳ ASR...", end=" ", flush=True)
-        transcript, lang, asr_ms = run_asr(wav)
+        # ── 2. ASR + translate in ONE call (mode=translate → English directly) ──
+        print("⏳ ASR + translate...", end=" ", flush=True)
+        is_english_guess = False  # will recheck after detection
+        english_transcript, lang, asr_ms = run_asr(wav, mode="translate")
+        is_english = lang in ENGLISH_LANGS
+        # If English detected, re-run as transcribe (mode=translate on English returns same text anyway)
         print(f"done ({asr_ms:.0f}ms)")
-        print(f"📝 [{lang}] {transcript!r}\n")
+        print(f"📝 [{lang}] EN: {english_transcript!r}\n")
 
-        if not transcript.strip():
+        if not english_transcript.strip():
             print("⚠️  Empty transcript, try again\n"); continue
 
-        # ── 3. Translate transcript → English (skip if already English) ─────────
-        is_english = lang in ENGLISH_LANGS
-        if not is_english:
-            print("🔄 Translating to English...", end=" ", flush=True)
-            t_tr = time.perf_counter()
-            english_transcript = sarvam_translate(transcript, lang, "en-IN")
-            tr_in_ms = (time.perf_counter() - t_tr) * 1000
-            print(f"done ({tr_in_ms:.0f}ms)")
-            print(f"   EN: {english_transcript!r}\n")
-        else:
-            english_transcript = transcript
-            tr_in_ms = 0
+        tr_in_ms = 0  # no separate translate step needed
 
         # ── 4. Filler phrase → play immediately ───────────────────────────────
         filler = FILLERS.get(lang, FILLERS["default"])
@@ -302,9 +301,7 @@ def main():
 
         print()
         print("┌─ Latency breakdown ──────────────────────────┐")
-        print(f"│  ASR                     : {asr_ms:>7.0f} ms         │")
-        if not is_english:
-            print(f"│  Translate in (→EN)      : {tr_in_ms:>7.0f} ms         │")
+        print(f"│  ASR + translate (→EN)   : {asr_ms:>7.0f} ms         │")
         print(f"│  Filler TTS              : {filler_ready_ms:>7.0f} ms         │")
         if has_aws:
             print(f"│  Nova TTFT               : {ttft_ms:>7.0f} ms         │")
