@@ -12,7 +12,7 @@ Controls:
 """
 import io
 import os
-import sys
+import re
 import time
 import threading
 import wave
@@ -37,11 +37,11 @@ RECORD_SR       = 16000   # mic sample rate
 TTS_SR          = 22050   # bulbul:v3 — 22050Hz for natural local playback (8000 for phone calls)
 
 FILLERS = {
-    "hi-IN": "Haan ji, ek second...",
-    "ta-IN": "Sari, oru nimidam...",
-    "te-IN": "Avunu, okka nimisham...",
-    "mr-IN": "Ho, ek kshan...",
-    "default": "One moment please...",
+    "hi-IN": "हाँ जी, एक पल।",
+    "ta-IN": "சரி, ஒரு நிமிடம்.",
+    "en-IN": "One moment.",
+    "en-US": "One moment.",
+    "default": "One moment.",
 }
 
 SYSTEM_PROMPT = (
@@ -150,11 +150,15 @@ def run_tts(text: str, lang: str) -> tuple[bytes, float]:
     return base64.b64decode(resp.json()["audios"][0]), ms
 
 
+LANG_TAG_RE = re.compile(r"\[LANG:\s*[a-z]{2}-[A-Z]{2}\]\s*", re.IGNORECASE)
+
+def clean_response(text: str) -> str:
+    """Strip [LANG: xx-XX] tags Nova sometimes echoes back."""
+    return LANG_TAG_RE.sub("", text).strip()
+
+
 def run_nova(transcript: str, lang: str, history: list) -> tuple[str, float, float]:
-    """
-    Stream Nova Lite response.
-    Returns (full_response, time_to_first_token_ms, total_ms).
-    """
+    """Stream Nova response. Returns (clean_response, ttft_ms, total_ms)."""
     if not has_aws:
         return "[AWS keys not set — add to .env to enable Nova]", 0, 0
 
@@ -183,16 +187,8 @@ def run_nova(transcript: str, lang: str, history: list) -> tuple[str, float, flo
                 print(delta["text"], end="", flush=True)
 
     total_ms = (time.perf_counter() - t0) * 1000
-    print()  # newline after streamed tokens
-    return full_text, ttft or 0, total_ms
-
-
-# ── Sentence splitter for streaming TTS ──────────────────────────────────────
-
-def split_sentences(text: str) -> list[str]:
-    import re
-    parts = re.split(r'(?<=[।.!?])\s+', text.strip())
-    return [p.strip() for p in parts if p.strip()]
+    print()
+    return clean_response(full_text), ttft or 0, total_ms
 
 
 # ── Main loop ─────────────────────────────────────────────────────────────────
@@ -262,15 +258,11 @@ def main():
             ttft_ms = nova_total_ms = 0
             print(f"🤖 Nova: {nova_response}\n")
 
-        # ── 5. TTS response → play sentence by sentence ───────────────────────
-        sentences = split_sentences(nova_response)
+        # ── 5. Single TTS call for full response — no pauses between sentences ──
         total_tts_ms = 0
-        print("🔊 Playing response:")
-        for i, sentence in enumerate(sentences):
-            print(f"   [{i+1}/{len(sentences)}] {sentence!r}")
-            audio_out, tts_ms = run_tts(sentence, lang)
-            total_tts_ms += tts_ms
-            play_audio(audio_out)
+        print(f"🔊 Playing: {nova_response!r}")
+        audio_out, total_tts_ms = run_tts(nova_response, lang)
+        play_audio(audio_out)
 
         # ── 6. Latency summary ────────────────────────────────────────────────
         total_ms = (time.perf_counter() - t_turn_start) * 1000

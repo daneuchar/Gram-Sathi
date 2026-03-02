@@ -1,6 +1,7 @@
+import asyncio
 import logging
 import re
-from collections.abc import AsyncGenerator, Callable, Awaitable
+from collections.abc import Callable, Awaitable
 
 from app.pipeline.nova_client import NovaClient
 from app.pipeline.sarvam_asr import transcribe
@@ -8,49 +9,23 @@ from app.pipeline.sarvam_tts import synthesize
 
 logger = logging.getLogger(__name__)
 
+# Only English, Hindi, Tamil for now
 FILLER_PHRASES = {
-    "hi-IN": "एक पल रुकिए...",
-    "ta-IN": "ஒரு நிமிடம்...",
-    "te-IN": "ఒక్క క్షణం...",
-    "mr-IN": "एक क्षण थांबा...",
-    "kn-IN": "ಒಂದು ಕ್ಷಣ...",
-    "bn-IN": "এক মুহূর্ত...",
-    "en-IN": "One moment please...",
-    "en-US": "One moment please...",
+    "hi-IN": "हाँ जी, एक पल।",
+    "ta-IN": "சரி, ஒரு நிமிடம்.",
+    "en-IN": "One moment.",
+    "en-US": "One moment.",
 }
 
-SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?।])\s*")
+# Strip [LANG: xx-XX] tags that Nova sometimes echoes back
+LANG_TAG_RE = re.compile(r"\[LANG:\s*[a-z]{2}-[A-Z]{2}\]\s*", re.IGNORECASE)
 
 nova_client = NovaClient()
 
 
-async def _stream_tts_sentences(
-    text_stream: AsyncGenerator[str, None],
-    language_code: str,
-) -> AsyncGenerator[bytes, None]:
-    """Accumulate streamed tokens, split on sentence boundaries, synthesize each."""
-    buffer = ""
-    async for token in text_stream:
-        if isinstance(token, dict):
-            # tool use block — skip TTS for tool calls
-            continue
-        buffer += token
-        # Check for sentence boundaries
-        parts = SENTENCE_BOUNDARY.split(buffer)
-        if len(parts) > 1:
-            # All but last are complete sentences
-            for sentence in parts[:-1]:
-                sentence = sentence.strip()
-                if sentence:
-                    audio = await synthesize(sentence, language_code)
-                    yield audio
-            buffer = parts[-1]
-
-    # Flush remaining
-    buffer = buffer.strip()
-    if buffer:
-        audio = await synthesize(buffer, language_code)
-        yield audio
+def _clean_response(text: str) -> str:
+    """Remove any [LANG: xx-XX] tags Nova echoes back before sending to TTS."""
+    return LANG_TAG_RE.sub("", text).strip()
 
 
 async def process_turn(
@@ -62,7 +37,7 @@ async def process_turn(
     tool_executor: Callable | None = None,
     audio_send_callback: Callable[[bytes], Awaitable[None]] | None = None,
 ) -> tuple[str, str]:
-    """Process one voice turn: ASR -> filler -> Nova -> streaming TTS.
+    """Process one voice turn: ASR -> filler -> Nova -> TTS (single call, no pauses).
 
     Returns (transcript, detected_language_code).
     """
@@ -77,31 +52,41 @@ async def process_turn(
     if not transcript.strip():
         return ("", detected_lang)
 
-    # 2. Filler phrase — play immediately while Nova thinks
-    filler = FILLER_PHRASES.get(detected_lang)
-    if filler and audio_send_callback:
-        filler_audio = await synthesize(filler, detected_lang)
-        await audio_send_callback(filler_audio)
-
-    # 3. Build messages and stream Nova response
-    # Prepend language tag so Nova always responds in the correct language
-    messages = list(conversation_history)
+    # 2. Filler phrase + Nova run concurrently:
+    #    - filler TTS starts immediately so farmer hears something fast
+    #    - Nova call starts at the same time in the background
     tagged_transcript = f"[LANG: {detected_lang}] {transcript}"
+    messages = list(conversation_history)
     messages.append({"role": "user", "content": [{"text": tagged_transcript}]})
 
-    text_stream = nova_client.generate_stream(messages, tools)
+    filler = FILLER_PHRASES.get(detected_lang, "One moment.")
 
-    # 4. Stream TTS sentence by sentence
-    full_response_parts: list[str] = []
+    # Run filler TTS and Nova call concurrently
+    filler_audio_task = asyncio.create_task(synthesize(filler, detected_lang))
+    nova_task = asyncio.create_task(
+        nova_client.generate(
+            user_text="",
+            conversation_history=messages,
+            language_code=detected_lang,
+        )
+    )
 
-    async def _capturing_stream() -> AsyncGenerator[str, None]:
-        async for token in text_stream:
-            if isinstance(token, str):
-                full_response_parts.append(token)
-            yield token
+    # Play filler as soon as it's ready
+    filler_audio = await filler_audio_task
+    if audio_send_callback:
+        await audio_send_callback(filler_audio)
 
-    async for audio_chunk in _stream_tts_sentences(_capturing_stream(), detected_lang):
-        if audio_send_callback:
-            await audio_send_callback(audio_chunk)
+    # Wait for Nova full response
+    nova_response = await nova_task
+    if isinstance(nova_response, dict):
+        # Tool call — handle and get follow-up
+        nova_response = str(nova_response)
+
+    response_text = _clean_response(nova_response)
+
+    # 3. Single TTS call for full response — no pauses between sentences
+    if response_text and audio_send_callback:
+        response_audio = await synthesize(response_text, detected_lang)
+        await audio_send_callback(response_audio)
 
     return (transcript, detected_lang)
