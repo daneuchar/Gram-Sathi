@@ -11,7 +11,6 @@ from app.pipeline.pipeline import process_turn_streaming
 logger = logging.getLogger(__name__)
 
 SAMPLE_RATE = 8000
-FRAME_SIZE = 960  # ~120ms at 8kHz
 
 
 def _ndarray_to_wav(sample_rate: int, audio: np.ndarray) -> bytes:
@@ -35,25 +34,28 @@ class GramSaathiHandler(AsyncStreamHandler):
     """
 
     def __init__(self):
-        super().__init__(
-            output_sample_rate=SAMPLE_RATE,
-            output_frame_size=FRAME_SIZE,
-        )
+        super().__init__(output_sample_rate=SAMPLE_RATE)
         self.conversation_history: list[dict] = []
         self.language_code = "hi-IN"
         self.audio_queue: asyncio.Queue = asyncio.Queue()
+        self._tasks: set = set()
+
+    def copy(self) -> "GramSaathiHandler":
+        return GramSaathiHandler()
 
     async def receive(self, frame: tuple[int, np.ndarray]) -> None:
         """Called by FastRTC when a full utterance is ready (after VAD silence)."""
         sample_rate, audio = frame
         wav_bytes = _ndarray_to_wav(sample_rate, audio)
-        asyncio.create_task(self._run_turn(wav_bytes))
+        task = asyncio.create_task(self._run_turn(wav_bytes))
+        self._tasks.add(task)
+        task.add_done_callback(self._tasks.discard)
 
     async def emit(self) -> tuple[int, np.ndarray] | None:
         """Called continuously by FastRTC — return next audio chunk or None."""
         try:
             item = await asyncio.wait_for(self.audio_queue.get(), timeout=0.02)
-            return item  # either (sr, ndarray) or None sentinel — both acceptable to FastRTC
+            return item  # (sr, ndarray) tuple; None sentinel is treated as "no audio" by FastRTC
         except asyncio.TimeoutError:
             return None
 
