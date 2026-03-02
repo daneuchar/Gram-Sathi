@@ -46,12 +46,11 @@ FILLERS = {
 
 SYSTEM_PROMPT = (
     "You are Gram Saathi, a voice assistant for Indian farmers. "
-    "CRITICAL: Each message begins with [LANG: xx-XX]. You MUST reply ONLY in that language. "
-    "If [LANG: en-IN] or [LANG: en-US], reply in English. "
-    "If [LANG: hi-IN], reply in Hindi. If [LANG: ta-IN], reply in Tamil. Never switch languages. "
-    "Keep replies under 3 short sentences — this is a phone call. "
-    "Never fabricate prices or data — say you don't have that data if unsure."
+    "Always respond in English — responses will be translated to the farmer's language automatically. "
+    "Keep replies under 3 short sentences — this is a phone call, be concise. "
+    "Never fabricate prices or data — say so clearly if you don't have it."
 )
+ENGLISH_LANGS = {"en-IN", "en-US", "en-GB", "en"}
 
 has_aws = bool(AWS_KEY and AWS_SECRET)
 
@@ -150,21 +149,28 @@ def run_tts(text: str, lang: str) -> tuple[bytes, float]:
     return base64.b64decode(resp.json()["audios"][0]), ms
 
 
-LANG_TAG_RE = re.compile(r"\[LANG:\s*[a-z]{2}-[A-Z]{2}\]\s*", re.IGNORECASE)
+def sarvam_translate(text: str, src: str, tgt: str) -> str:
+    """Translate text using Sarvam sarvam-translate:v1."""
+    if src == tgt or (src in ENGLISH_LANGS and tgt in ENGLISH_LANGS):
+        return text
+    resp = httpx.post("https://api.sarvam.ai/translate",
+        headers={**SARVAM_HEADERS, "Content-Type": "application/json"},
+        json={"input": text, "source_language_code": src,
+              "target_language_code": tgt, "model": "sarvam-translate:v1"},
+        timeout=15)
+    resp.raise_for_status()
+    return resp.json().get("translated_text", text)
 
-def clean_response(text: str) -> str:
-    """Strip [LANG: xx-XX] tags Nova sometimes echoes back."""
-    return LANG_TAG_RE.sub("", text).strip()
 
-
-def run_nova(transcript: str, lang: str, history: list) -> tuple[str, float, float]:
-    """Stream Nova response. Returns (clean_response, ttft_ms, total_ms)."""
+def run_nova(english_transcript: str, history: list) -> tuple[str, float, float]:
+    """Send English transcript to Nova, get English response.
+    Returns (english_response, ttft_ms, total_ms).
+    """
     if not has_aws:
         return "[AWS keys not set — add to .env to enable Nova]", 0, 0
 
     messages = list(history)
-    tagged = f"[LANG: {lang}] {transcript}"
-    messages.append({"role": "user", "content": [{"text": tagged}]})
+    messages.append({"role": "user", "content": [{"text": english_transcript}]})
 
     t0 = time.perf_counter()
     ttft = None
@@ -239,53 +245,83 @@ def main():
         if not transcript.strip():
             print("⚠️  Empty transcript, try again\n"); continue
 
-        # ── 3. Filler phrase → play immediately ───────────────────────────────
+        # ── 3. Translate transcript → English (skip if already English) ─────────
+        is_english = lang in ENGLISH_LANGS
+        if not is_english:
+            print("🔄 Translating to English...", end=" ", flush=True)
+            t_tr = time.perf_counter()
+            english_transcript = sarvam_translate(transcript, lang, "en-IN")
+            tr_in_ms = (time.perf_counter() - t_tr) * 1000
+            print(f"done ({tr_in_ms:.0f}ms)")
+            print(f"   EN: {english_transcript!r}\n")
+        else:
+            english_transcript = transcript
+            tr_in_ms = 0
+
+        # ── 4. Filler phrase → play immediately ───────────────────────────────
         filler = FILLERS.get(lang, FILLERS["default"])
-        print(f"🗣  Playing filler: {filler!r}")
         t_filler = time.perf_counter()
         filler_audio, filler_tts_ms = run_tts(filler, lang)
         filler_ready_ms = (time.perf_counter() - t_filler) * 1000
+        print(f"🗣  Filler ready in {filler_ready_ms:.0f}ms — playing")
         play_audio(filler_audio)
 
-        # ── 4. Nova Lite (streaming) ──────────────────────────────────────────
+        # ── 5. Nova (English in, English out) ────────────────────────────────
         if has_aws:
-            print("🤖 Nova response: ", end="", flush=True)
-            t_nova = time.perf_counter()
-            nova_response, ttft_ms, nova_total_ms = run_nova(transcript, lang, history)
-            print(f"\n⚡ Nova TTFT: {ttft_ms:.0f}ms | Total: {nova_total_ms:.0f}ms\n")
+            print("🤖 Nova (EN): ", end="", flush=True)
+            english_response, ttft_ms, nova_total_ms = run_nova(english_transcript, history)
+            print(f"\n   ⚡ TTFT: {ttft_ms:.0f}ms | Total: {nova_total_ms:.0f}ms")
+            print(f"   EN: {english_response!r}\n")
         else:
-            nova_response = "[Nova not available — add AWS keys]"
+            english_response = "I am sorry, Nova is not available right now."
             ttft_ms = nova_total_ms = 0
-            print(f"🤖 Nova: {nova_response}\n")
 
-        # ── 5. Single TTS call for full response — no pauses between sentences ──
-        total_tts_ms = 0
-        print(f"🔊 Playing: {nova_response!r}")
-        audio_out, total_tts_ms = run_tts(nova_response, lang)
+        # ── 6. Translate response back to farmer's language ───────────────────
+        if not is_english and english_response:
+            print("🔄 Translating response...", end=" ", flush=True)
+            t_tr2 = time.perf_counter()
+            final_response = sarvam_translate(english_response, "en-IN", lang)
+            tr_out_ms = (time.perf_counter() - t_tr2) * 1000
+            print(f"done ({tr_out_ms:.0f}ms)")
+            print(f"   {lang}: {final_response!r}\n")
+        else:
+            final_response = english_response
+            tr_out_ms = 0
+
+        # ── 7. Single TTS call — full response, no pauses ────────────────────
+        print(f"🔊 Speaking...")
+        audio_out, total_tts_ms = run_tts(final_response, lang)
         play_audio(audio_out)
 
         # ── 6. Latency summary ────────────────────────────────────────────────
         total_ms = (time.perf_counter() - t_turn_start) * 1000
         time_to_first_audio = asr_ms + filler_ready_ms  # farmer hears filler first
 
+        total_ms = (time.perf_counter() - t_turn_start) * 1000
+        time_to_first_audio = asr_ms + tr_in_ms + filler_ready_ms
+
         print()
-        print("┌─ Latency breakdown ─────────────────────────┐")
-        print(f"│  ASR (Sarvam Saaras v3)  : {asr_ms:>7.0f} ms        │")
-        print(f"│  Filler TTS + play       : {filler_ready_ms:>7.0f} ms        │")
+        print("┌─ Latency breakdown ──────────────────────────┐")
+        print(f"│  ASR                     : {asr_ms:>7.0f} ms         │")
+        if not is_english:
+            print(f"│  Translate in (→EN)      : {tr_in_ms:>7.0f} ms         │")
+        print(f"│  Filler TTS              : {filler_ready_ms:>7.0f} ms         │")
         if has_aws:
-            print(f"│  Nova TTFT               : {ttft_ms:>7.0f} ms        │")
-            print(f"│  Nova total              : {nova_total_ms:>7.0f} ms        │")
-        print(f"│  Response TTS (total)    : {total_tts_ms:>7.0f} ms        │")
-        print(f"│  ─────────────────────────────────────────  │")
-        print(f"│  Time to first audio     : {time_to_first_audio:>7.0f} ms        │")
-        print(f"│  Full turn               : {total_ms:>7.0f} ms        │")
-        print("└─────────────────────────────────────────────┘")
+            print(f"│  Nova TTFT               : {ttft_ms:>7.0f} ms         │")
+            print(f"│  Nova total              : {nova_total_ms:>7.0f} ms         │")
+        if not is_english:
+            print(f"│  Translate out (→{lang[:2].upper()})     : {tr_out_ms:>7.0f} ms         │")
+        print(f"│  Response TTS            : {total_tts_ms:>7.0f} ms         │")
+        print(f"│  ──────────────────────────────────────────  │")
+        print(f"│  Time to first audio     : {time_to_first_audio:>7.0f} ms         │")
+        print(f"│  Full turn               : {total_ms:>7.0f} ms         │")
+        print("└──────────────────────────────────────────────┘")
         print()
 
-        # Update history for multi-turn conversation
-        if has_aws and nova_response and not nova_response.startswith("["):
-            history.append({"role": "user", "content": [{"text": transcript}]})
-            history.append({"role": "assistant", "content": [{"text": nova_response}]})
+        # Store English conversation in history for multi-turn context
+        if has_aws and english_response and not english_response.startswith("["):
+            history.append({"role": "user", "content": [{"text": english_transcript}]})
+            history.append({"role": "assistant", "content": [{"text": english_response}]})
 
 
 if __name__ == "__main__":
