@@ -1,40 +1,85 @@
 import base64
+import json
 import logging
+from collections.abc import AsyncGenerator
 
 import httpx
+import websockets
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-TTS_URL = "https://api.sarvam.ai/text-to-speech"
+TTS_REST_URL = "https://api.sarvam.ai/text-to-speech"
+TTS_WS_URL   = "wss://api.sarvam.ai/text-to-speech/ws"
 
-# bulbul:v3 speakers — language-specific voices for maximum naturalness
+# Language → speaker mapping (bulbul:v3 / bulbul:v3-beta)
 SPEAKER_MAP = {
-    "hi-IN": "kavya",      # Hindi female — natural, warm
-    "ta-IN": "kavitha",    # Tamil female — native Tamil speaker
-    "te-IN": "gokul",      # Telugu male — native Telugu speaker
-    "mr-IN": "roopa",      # Marathi female
-    "kn-IN": "shruti",     # Kannada female
-    "bn-IN": "kabir",      # Bengali male
-    "gu-IN": "manan",      # Gujarati male
-    "pa-IN": "aayan",      # Punjabi male
-    "en-IN": "anand",      # English (Indian accent)
+    "hi-IN": "kavya",
+    "ta-IN": "kavitha",
+    "te-IN": "gokul",
+    "mr-IN": "roopa",
+    "kn-IN": "shruti",
+    "bn-IN": "kabir",
+    "gu-IN": "manan",
+    "pa-IN": "aayan",
+    "en-IN": "anand",
     "en-US": "anand",
     "default": "kavya",
 }
 
 
+async def synthesize_streaming(
+    text: str,
+    language_code: str,
+    sample_rate: int = 8000,
+) -> AsyncGenerator[bytes, None]:
+    """Stream TTS audio chunks via Sarvam WebSocket API.
+
+    First audio chunk arrives in ~400ms instead of waiting for full synthesis.
+    Yields raw PCM bytes (linear16) as they arrive — caller plays each chunk immediately.
+
+    Uses bulbul:v3-beta (WebSocket endpoint only supports v2/v3-beta).
+    """
+    speaker = SPEAKER_MAP.get(language_code, SPEAKER_MAP["default"])
+    uri = f"{TTS_WS_URL}?model=bulbul:v3-beta&send_completion_event=true"
+    headers = {"Api-Subscription-Key": settings.sarvam_api_key}
+
+    async with websockets.connect(uri, additional_headers=headers) as ws:
+        # 1. Config
+        await ws.send(json.dumps({"type": "config", "data": {
+            "target_language_code": language_code,
+            "speaker": speaker,
+            "pace": 1.0,
+            "speech_sample_rate": str(sample_rate),
+            "model": "bulbul:v3-beta",
+            "output_audio_codec": "linear16",
+        }}))
+
+        # 2. Send text + flush
+        await ws.send(json.dumps({"type": "text", "data": {"text": text}}))
+        await ws.send(json.dumps({"type": "flush"}))
+
+        # 3. Stream audio chunks until completion event or connection closes
+        try:
+            async for message in ws:
+                msg = json.loads(message)
+                if msg["type"] == "audio":
+                    yield base64.b64decode(msg["data"]["audio"])
+                elif msg["type"] == "event":
+                    break  # stream_complete or similar — done
+                elif msg["type"] == "error":
+                    logger.error("Sarvam WS TTS error: %s", msg)
+                    break
+        except websockets.exceptions.ConnectionClosed:
+            pass  # server closed connection — all audio received
+
+
 async def synthesize(text: str, language_code: str, sample_rate: int = 8000) -> bytes:
-    """Synthesize text to PCM audio using Sarvam Bulbul v3.
+    """Synthesize full audio via REST (used for short filler phrases at startup).
 
-    bulbul:v3 improvements over v2:
-    - More natural prosody and expressiveness
-    - 45 language-specific speakers
-    - temperature parameter for voice variation (higher = more natural)
-    - Better Indian language rendering
-
-    sample_rate: 8000 for phone calls (Exotel), 22050 for local playback
+    For longer responses use synthesize_streaming() for lower perceived latency.
+    sample_rate: 8000 for Exotel phone calls, 22050 for local playback.
     """
     speaker = SPEAKER_MAP.get(language_code, SPEAKER_MAP["default"])
 
@@ -42,17 +87,15 @@ async def synthesize(text: str, language_code: str, sample_rate: int = 8000) -> 
         "inputs": [text],
         "target_language_code": language_code,
         "speaker": speaker,
-        "pace": 1.0,              # natural pace (was 0.9 — slightly slow)
+        "pace": 1.0,
         "speech_sample_rate": sample_rate,
         "model": "bulbul:v3",
-        "temperature": 0.8,       # v3 only — higher = more expressive, less robotic
+        "temperature": 0.8,
     }
 
     headers = {"api-subscription-key": settings.sarvam_api_key}
-
     async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.post(TTS_URL, json=payload, headers=headers)
+        resp = await client.post(TTS_REST_URL, json=payload, headers=headers)
         resp.raise_for_status()
 
-    audio_b64 = resp.json()["audios"][0]
-    return base64.b64decode(audio_b64)
+    return base64.b64decode(resp.json()["audios"][0])
