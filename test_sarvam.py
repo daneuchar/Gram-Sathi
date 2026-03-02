@@ -36,13 +36,16 @@ SARVAM_HEADERS  = {"api-subscription-key": SARVAM_API_KEY}
 RECORD_SR       = 16000   # mic sample rate
 TTS_SR          = 22050   # bulbul:v3 — 22050Hz for natural local playback (8000 for phone calls)
 
-FILLERS = {
+FILLER_TEXT = {
     "hi-IN": "हाँ जी, एक पल।",
     "ta-IN": "சரி, ஒரு நிமிடம்.",
     "en-IN": "One moment.",
     "en-US": "One moment.",
     "default": "One moment.",
 }
+
+# Pre-synthesized filler audio — cached at startup so filler plays instantly (0ms wait)
+FILLER_CACHE: dict[str, bytes] = {}
 
 SYSTEM_PROMPT = (
     "You are Gram Saathi, a voice assistant for Indian farmers. "
@@ -95,6 +98,74 @@ def play_audio(pcm_bytes: bytes, sr: int = TTS_SR):
     """Play raw PCM int16 bytes through speakers."""
     audio = np.frombuffer(pcm_bytes, dtype=np.int16).astype(np.float32) / 32767
     sd.play(audio, samplerate=sr, blocking=True)
+
+
+def warmup_fillers():
+    """Pre-synthesize all filler phrases once at startup and cache them.
+    Eliminates TTS latency for fillers — they play instantly on demand.
+    """
+    print("⏳ Pre-synthesizing filler phrases...", end=" ", flush=True)
+    t0 = time.perf_counter()
+    for lang, text in FILLER_TEXT.items():
+        if lang == "default":
+            continue
+        try:
+            audio, _ = run_tts(text, lang if lang != "default" else "en-IN")
+            FILLER_CACHE[lang] = audio
+        except Exception:
+            pass
+    # fallback
+    if "en-IN" in FILLER_CACHE:
+        FILLER_CACHE["default"] = FILLER_CACHE["en-IN"]
+    ms = (time.perf_counter() - t0) * 1000
+    print(f"done ({ms:.0f}ms) — fillers cached for {list(FILLER_CACHE.keys())}")
+
+
+def split_sentences(text: str) -> list[str]:
+    """Split on sentence-ending punctuation."""
+    parts = re.split(r"(?<=[।.!?])\s+", text.strip())
+    return [p.strip() for p in parts if p.strip()]
+
+
+def play_tts_with_overlap(text: str, lang: str) -> float:
+    """Sentence-split TTS with overlap: play sentence N while synthesizing sentence N+1.
+
+    Returns total TTS time (ms).
+    """
+    sentences = split_sentences(text)
+    if not sentences:
+        return 0.0
+
+    t0 = time.perf_counter()
+
+    if len(sentences) == 1:
+        audio, ms = run_tts(sentences[0], lang)
+        play_audio(audio)
+        return (time.perf_counter() - t0) * 1000
+
+    # Synthesize first sentence immediately
+    next_audio_holder = [None]
+    next_audio_holder[0], _ = run_tts(sentences[0], lang)
+
+    for i, sentence in enumerate(sentences):
+        current_audio = next_audio_holder[0]
+
+        # Kick off synthesis of NEXT sentence in background thread
+        if i + 1 < len(sentences):
+            next_audio_holder[0] = None
+            def _synth_next(s=sentences[i + 1]):
+                next_audio_holder[0], _ = run_tts(s, lang)
+            t = threading.Thread(target=_synth_next, daemon=True)
+            t.start()
+
+        # Play current sentence (blocks until done — next sentence synthesizes in parallel)
+        play_audio(current_audio)
+
+        # If next sentence isn't ready yet, wait briefly
+        if i + 1 < len(sentences):
+            t.join()
+
+    return (time.perf_counter() - t0) * 1000
 
 
 # ── Pipeline steps ────────────────────────────────────────────────────────────
@@ -216,6 +287,10 @@ def main():
         print("     Add AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY to .env")
     print("  Type 'q' + ENTER to quit\n")
 
+    # Warm up filler cache — synthesize once, play instantly on every turn
+    warmup_fillers()
+    print()
+
     history = []
     session = 0
 
@@ -257,13 +332,14 @@ def main():
 
         tr_in_ms = 0  # no separate translate step needed
 
-        # ── 4. Filler phrase → play immediately ───────────────────────────────
-        filler = FILLERS.get(lang, FILLERS["default"])
-        t_filler = time.perf_counter()
-        filler_audio, filler_tts_ms = run_tts(filler, lang)
-        filler_ready_ms = (time.perf_counter() - t_filler) * 1000
-        print(f"🗣  Filler ready in {filler_ready_ms:.0f}ms — playing")
-        play_audio(filler_audio)
+        # ── 4. Filler — play from cache instantly (0ms wait) ─────────────────
+        filler_audio = FILLER_CACHE.get(lang) or FILLER_CACHE.get("default")
+        if filler_audio:
+            print(f"🗣  Filler (cached) — playing instantly")
+            play_audio(filler_audio)
+            filler_ready_ms = 0
+        else:
+            filler_ready_ms = 0
 
         # ── 5. Nova (English in, English out) ────────────────────────────────
         if has_aws:
@@ -287,22 +363,19 @@ def main():
             final_response = english_response
             tr_out_ms = 0
 
-        # ── 7. Single TTS call — full response, no pauses ────────────────────
-        print(f"🔊 Speaking...")
-        audio_out, total_tts_ms = run_tts(final_response, lang)
-        play_audio(audio_out)
+        # ── 7. TTS with sentence overlap — play sentence N while synthesizing N+1
+        print(f"🔊 Speaking (sentence overlap)...")
+        t_tts = time.perf_counter()
+        total_tts_ms = play_tts_with_overlap(final_response, lang)
 
-        # ── 6. Latency summary ────────────────────────────────────────────────
+        # ── 8. Latency summary ────────────────────────────────────────────────
         total_ms = (time.perf_counter() - t_turn_start) * 1000
-        time_to_first_audio = asr_ms + filler_ready_ms  # farmer hears filler first
-
-        total_ms = (time.perf_counter() - t_turn_start) * 1000
-        time_to_first_audio = asr_ms + tr_in_ms + filler_ready_ms
+        time_to_first_audio = asr_ms  # filler is cached → plays right after ASR
 
         print()
         print("┌─ Latency breakdown ──────────────────────────┐")
         print(f"│  ASR + translate (→EN)   : {asr_ms:>7.0f} ms         │")
-        print(f"│  Filler TTS              : {filler_ready_ms:>7.0f} ms         │")
+        print(f"│  Filler (cached)         :       0 ms         │")
         if has_aws:
             print(f"│  Nova TTFT               : {ttft_ms:>7.0f} ms         │")
             print(f"│  Nova total              : {nova_total_ms:>7.0f} ms         │")
