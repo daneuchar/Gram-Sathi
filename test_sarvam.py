@@ -194,7 +194,7 @@ def run_nova(english_transcript: str, history: list) -> tuple[str, float, float]
 
     total_ms = (time.perf_counter() - t0) * 1000
     print()
-    return clean_response(full_text), ttft or 0, total_ms
+    return full_text.strip(), ttft or 0, total_ms
 
 
 # ── Main loop ─────────────────────────────────────────────────────────────────
