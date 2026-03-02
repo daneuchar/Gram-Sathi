@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -23,48 +23,24 @@ def _override_db():
 
 
 @pytest.fixture
-def _clear_rate_limit():
-    """Clear the rate-limit cache so tests are isolated."""
-    from app.cache import _rate_limit_cache
-    _rate_limit_cache.clear()
-
-
-@pytest.fixture
 async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 
-@pytest.mark.usefixtures("_clear_rate_limit")
-async def test_missed_call_webhook_returns_200(client: AsyncClient):
+async def test_inbound_call_returns_twiml(client: AsyncClient):
     resp = await client.post(
-        "/webhooks/missed-call",
-        data={"CallSid": "sid-001", "From": "+919999900001", "Status": "missed"},
+        "/webhooks/inbound-call",
+        data={"CallSid": "CA123", "From": "+919999900001"},
     )
     assert resp.status_code == 200
+    assert "telephone/handler" in resp.text
 
 
-@pytest.mark.usefixtures("_clear_rate_limit")
-async def test_missed_call_triggers_callback(client: AsyncClient):
-    with patch("app.routers.webhooks.trigger_callback") as mock_cb:
-        resp = await client.post(
-            "/webhooks/missed-call",
-            data={"CallSid": "sid-002", "From": "+919999900002", "Status": "missed"},
-        )
-        assert resp.status_code == 200
-        mock_cb.assert_called_once_with("+919999900002")
-
-
-@pytest.mark.usefixtures("_clear_rate_limit")
-async def test_rate_limiting_prevents_duplicate(client: AsyncClient):
-    with patch("app.routers.webhooks.trigger_callback") as mock_cb:
-        await client.post(
-            "/webhooks/missed-call",
-            data={"CallSid": "sid-003a", "From": "+919999900003", "Status": "missed"},
-        )
-        await client.post(
-            "/webhooks/missed-call",
-            data={"CallSid": "sid-003b", "From": "+919999900003", "Status": "missed"},
-        )
-        mock_cb.assert_called_once()
+async def test_call_status_returns_ok(client: AsyncClient):
+    resp = await client.post(
+        "/webhooks/call-status",
+        data={"CallSid": "CA123", "CallStatus": "completed", "CallDuration": "30"},
+    )
+    assert resp.status_code == 200
