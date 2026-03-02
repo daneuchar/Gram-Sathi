@@ -2,9 +2,10 @@ import asyncio
 import io
 import logging
 import wave
+from collections.abc import AsyncGenerator
 
 import numpy as np
-from fastrtc import AsyncStreamHandler
+from fastrtc import ReplyOnPause
 
 from app.pipeline.pipeline import process_turn_streaming
 
@@ -24,64 +25,89 @@ def _ndarray_to_wav(sample_rate: int, audio: np.ndarray) -> bytes:
     return buf.getvalue()
 
 
-class GramSaathiHandler(AsyncStreamHandler):
-    """Single handler for both Twilio phone calls and browser WebRTC sessions.
+async def _safe_process_turn_streaming(
+    audio_bytes: bytes,
+    farmer_profile,
+    conversation_history: list[dict],
+    language_code: str,
+    audio_queue: asyncio.Queue,
+    sample_rate: int,
+) -> tuple[str, str, str]:
+    """Wrapper that guarantees None sentinel is put even if pipeline raises."""
+    try:
+        return await process_turn_streaming(
+            audio_bytes=audio_bytes,
+            farmer_profile=farmer_profile,
+            conversation_history=conversation_history,
+            language_code=language_code,
+            audio_queue=audio_queue,
+            sample_rate=sample_rate,
+        )
+    except Exception:
+        logger.exception("process_turn_streaming error")
+        await audio_queue.put(None)
+        return ("", language_code, "")
 
-    FastRTC handles:
-    - Silero VAD: detects speech start/end, passes full utterance to receive()
-    - Sample-rate conversion: Twilio 8kHz mulaw <-> handler's working rate
-    - Sequential turn-taking via can_interrupt=False in the Stream config
+
+class GramSaathiHandler(ReplyOnPause):
+    """Voice handler for Gram Saathi.
+
+    ReplyOnPause runs Silero VAD on each incoming audio frame and calls
+    _reply_fn only once per complete utterance (after a pause is detected).
+    _reply_fn is an async generator that yields (sample_rate, ndarray) audio
+    chunks back to the caller as they become available.
     """
 
     def __init__(self):
-        super().__init__(output_sample_rate=SAMPLE_RATE)
+        super().__init__(
+            fn=self._reply_fn,
+            output_sample_rate=SAMPLE_RATE,
+            can_interrupt=False,
+        )
         self.conversation_history: list[dict] = []
         self.language_code = "hi-IN"
-        self.audio_queue: asyncio.Queue = asyncio.Queue()
-        self._tasks: set = set()
 
     def copy(self) -> "GramSaathiHandler":
+        """Called by FastRTC for each new WebRTC/Twilio connection."""
         return GramSaathiHandler()
 
-    async def receive(self, frame: tuple[int, np.ndarray]) -> None:
-        """Called by FastRTC when a full utterance is ready (after VAD silence)."""
-        sample_rate, audio = frame
-        wav_bytes = _ndarray_to_wav(sample_rate, audio)
-        task = asyncio.create_task(self._run_turn(wav_bytes))
-        self._tasks.add(task)
-        task.add_done_callback(self._tasks.discard)
+    async def _reply_fn(self, audio: tuple[int, np.ndarray]) -> AsyncGenerator:
+        """Called once per full utterance (after Silero VAD detects a pause).
 
-    async def emit(self) -> tuple[int, np.ndarray] | None:
-        """Called continuously by FastRTC — return next audio chunk or None."""
-        try:
-            item = await asyncio.wait_for(self.audio_queue.get(), timeout=0.02)
-            return item  # (sr, ndarray) tuple; None sentinel is treated as "no audio" by FastRTC
-        except asyncio.TimeoutError:
-            return None
+        Runs ASR → LLM → TTS pipeline and yields (sample_rate, ndarray) chunks.
+        """
+        sample_rate, arr = audio
+        wav_bytes = _ndarray_to_wav(sample_rate, arr.reshape(-1))
 
-    async def _run_turn(self, wav_bytes: bytes) -> None:
-        try:
-            transcript, detected_lang, assistant_response = await process_turn_streaming(
+        audio_queue: asyncio.Queue = asyncio.Queue()
+        task = asyncio.create_task(
+            _safe_process_turn_streaming(
                 audio_bytes=wav_bytes,
                 farmer_profile=None,
                 conversation_history=list(self.conversation_history[-20:]),
                 language_code=self.language_code,
-                audio_queue=self.audio_queue,
+                audio_queue=audio_queue,
                 sample_rate=SAMPLE_RATE,
             )
-            if transcript:
+        )
+
+        # Drain audio queue, yielding each chunk to FastRTC as it arrives
+        while True:
+            item = await audio_queue.get()
+            if item is None:
+                break
+            yield item
+
+        # After all audio is yielded, capture the turn result and update state
+        transcript, detected_lang, english_response = await task
+        if transcript:
+            self.conversation_history.append(
+                {"role": "user", "content": [{"text": transcript}]}
+            )
+            if english_response:
                 self.conversation_history.append(
-                    {"role": "user", "content": [{"text": transcript}]}
+                    {"role": "assistant", "content": [{"text": english_response}]}
                 )
-                if assistant_response:
-                    self.conversation_history.append(
-                        {"role": "assistant", "content": [{"text": assistant_response}]}
-                    )
-                self.language_code = detected_lang
-                logger.info("[%s] user: %s", detected_lang, transcript)
-                logger.info("[%s] assistant: %s", detected_lang, assistant_response)
-        except asyncio.CancelledError:
-            raise
-        except Exception:
-            logger.exception("GramSaathiHandler._run_turn error")
-            await self.audio_queue.put(None)  # ensure sentinel even on error
+            self.language_code = detected_lang
+            logger.info("[%s] user: %s", detected_lang, transcript)
+            logger.info("[%s] assistant: %s", detected_lang, english_response)
