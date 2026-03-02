@@ -39,6 +39,8 @@ MIN_SPEECH_CHUNKS = 5  # 100ms
 # Debounce: require N consecutive speech chunks before entering speech state.
 SPEECH_CONFIRM_CHUNKS = 4  # 4 × 20ms = 80ms confirmation window
 
+MAX_HISTORY = 20  # keep last 10 user+assistant turn pairs
+
 
 def mulaw_to_wav(mulaw_bytes: bytes) -> bytes:
     pcm = audioop.ulaw2lin(mulaw_bytes, 2)
@@ -101,7 +103,7 @@ async def voice_ws(websocket: WebSocket):
             transcript, detected_lang, assistant_response = await process_turn(
                 wav_bytes,
                 farmer_profile=None,
-                conversation_history=list(conversation_history),
+                conversation_history=list(conversation_history[-MAX_HISTORY:]),
                 language_code=language_code,
                 audio_send_callback=audio_send_callback,
             )

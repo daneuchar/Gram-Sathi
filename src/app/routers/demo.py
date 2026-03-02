@@ -44,6 +44,8 @@ MIN_SPEECH_CHUNKS = 3  # min speech chunks before processing (~400ms)
 # of utterance isn't lost.
 SPEECH_CONFIRM_CHUNKS = 2  # ~256ms at 128ms/chunk
 
+MAX_HISTORY = 20  # keep last 10 user+assistant turn pairs
+
 
 def pcm16_rms(pcm_bytes: bytes) -> float:
     """RMS energy of raw 16-bit little-endian signed PCM bytes."""
@@ -92,7 +94,7 @@ async def demo_ws(websocket: WebSocket):
             transcript, detected_lang, assistant_response = await process_turn(
                 wav_bytes,
                 farmer_profile=None,
-                conversation_history=list(conversation_history),
+                conversation_history=list(conversation_history[-MAX_HISTORY:]),
                 language_code=language_code,
                 audio_send_callback=send_audio,
             )
