@@ -28,7 +28,7 @@ async def test_nova_generates_response():
 
 @pytest.mark.asyncio
 async def test_pipeline_handles_empty_audio():
-    transcript, detected_lang = await process_turn(
+    transcript, detected_lang, assistant_response = await process_turn(
         audio_bytes=b"",
         farmer_profile=None,
         conversation_history=[],
@@ -36,3 +36,4 @@ async def test_pipeline_handles_empty_audio():
     )
     assert transcript == ""
     assert detected_lang == "hi-IN"
+    assert assistant_response == ""

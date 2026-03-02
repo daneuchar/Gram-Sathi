@@ -28,8 +28,9 @@ def test_get_mandi_prices_returns_price(mock_get):
 
     result = get_mandi_prices("Wheat", "Madhya Pradesh", "Sehore")
 
-    assert result["commodity"] == "Wheat"
-    assert result["price"] == "2200"
+    assert "prices" in result
+    assert result["prices"][0]["commodity"] == "Wheat"
+    assert result["prices"][0]["modal_price"] == "2200"
     mock_get.assert_called_once()
 
 
