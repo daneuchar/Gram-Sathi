@@ -15,6 +15,8 @@ FILLER_PHRASES = {
     "mr-IN": "एक क्षण थांबा...",
     "kn-IN": "ಒಂದು ಕ್ಷಣ...",
     "bn-IN": "এক মুহূর্ত...",
+    "en-IN": "One moment please...",
+    "en-US": "One moment please...",
 }
 
 SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?।])\s*")
@@ -82,8 +84,10 @@ async def process_turn(
         await audio_send_callback(filler_audio)
 
     # 3. Build messages and stream Nova response
+    # Prepend language tag so Nova always responds in the correct language
     messages = list(conversation_history)
-    messages.append({"role": "user", "content": [{"text": transcript}]})
+    tagged_transcript = f"[LANG: {detected_lang}] {transcript}"
+    messages.append({"role": "user", "content": [{"text": tagged_transcript}]})
 
     text_stream = nova_client.generate_stream(messages, tools)
 

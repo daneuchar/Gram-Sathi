@@ -11,8 +11,11 @@ logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = (
     "You are Gram Saathi, a voice assistant for Indian farmers. "
-    "Always respond in the farmer's language. Keep replies under 3 sentences. "
-    "Always use the provided tools to fetch real data — never guess prices, weather, or schemes."
+    "CRITICAL: Each message begins with [LANG: xx-XX]. You MUST reply ONLY in that language. "
+    "If [LANG: en-IN] or [LANG: en-US], reply in English. "
+    "If [LANG: hi-IN], reply in Hindi. If [LANG: ta-IN], reply in Tamil. Never switch languages. "
+    "Keep replies under 3 short sentences — this is a phone call. "
+    "Always use tools for real data — never guess prices, weather, or schemes."
 )
 
 
@@ -57,10 +60,12 @@ class NovaClient:
         farmer_profile: dict | None = None,
         conversation_history: list[dict] | None = None,
         tools: list[dict] | None = None,
+        language_code: str = "unknown",
     ) -> str:
         """Non-streaming fallback for tool follow-ups."""
         messages = list(conversation_history or [])
-        messages.append({"role": "user", "content": [{"text": user_text}]})
+        tagged = f"[LANG: {language_code}] {user_text}"
+        messages.append({"role": "user", "content": [{"text": tagged}]})
 
         kwargs = self._build_kwargs(messages, tools)
         response = await self._call_bedrock(kwargs)
