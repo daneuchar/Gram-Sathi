@@ -3,6 +3,7 @@ import base64
 import io
 import logging
 from collections.abc import AsyncGenerator
+from pathlib import Path
 
 import httpx
 from pydub import AudioSegment
@@ -13,8 +14,35 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 TTS_REST_URL = "https://api.sarvam.ai/text-to-speech"
+FILLERS_DIR  = Path(__file__).parent.parent / "assets" / "fillers"
 
-# bulbul:v3 speakers — for REST API (filler phrases, best quality)
+# Pre-generated filler audio loaded from disk (no API call on startup).
+# Generated once by: uv run python scripts/generate_fillers.py
+# Files use bulbul:v2 + anushka — same voice as streaming TTS response.
+def _load_filler_cache() -> dict[str, dict[int, bytes]]:
+    cache: dict[str, dict[int, bytes]] = {}
+    if not FILLERS_DIR.exists():
+        return cache
+    for path in FILLERS_DIR.glob("*.raw"):
+        # filename format: hi-IN_8000.raw
+        parts = path.stem.split("_")
+        if len(parts) == 2:
+            lang, sr_str = parts
+            sr = int(sr_str)
+            cache.setdefault(lang, {})[sr] = path.read_bytes()
+    return cache
+
+FILLER_AUDIO: dict[str, dict[int, bytes]] = _load_filler_cache()
+logger.info("Loaded filler audio for: %s", list(FILLER_AUDIO.keys()))
+
+
+def get_filler_audio(language_code: str, sample_rate: int = 8000) -> bytes | None:
+    """Return pre-generated filler audio bytes, or None if not found."""
+    lang = language_code if language_code in FILLER_AUDIO else "en-IN"
+    return FILLER_AUDIO.get(lang, {}).get(sample_rate)
+
+
+# bulbul:v3 speakers — kept for non-filler REST synthesis if ever needed
 SPEAKER_MAP_V3 = {
     "hi-IN": "kavya",
     "ta-IN": "kavitha",

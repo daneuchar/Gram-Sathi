@@ -104,25 +104,24 @@ def play_audio(pcm_bytes: bytes, sr: int = TTS_SR):
     sd.play(audio, samplerate=sr, blocking=True)
 
 
-def warmup_fillers():
-    """Pre-synthesize all filler phrases once at startup and cache them.
-    Eliminates TTS latency for fillers — they play instantly on demand.
+def load_fillers():
+    """Load pre-generated filler audio from disk — 0ms, no API call.
+    Files generated once by: uv run python scripts/generate_fillers.py
+    Uses bulbul:v2 + anushka (same voice as streaming response — consistent).
     """
-    print("⏳ Pre-synthesizing filler phrases...", end=" ", flush=True)
-    t0 = time.perf_counter()
-    for lang, text in FILLER_TEXT.items():
-        if lang == "default":
-            continue
-        try:
-            audio, _ = run_tts(text, lang if lang != "default" else "en-IN")
-            FILLER_CACHE[lang] = audio
-        except Exception:
-            pass
-    # fallback
+    from pathlib import Path
+    fillers_dir = Path("src/app/assets/fillers")
+    if not fillers_dir.exists():
+        print("⚠️  Filler files not found. Run: uv run python scripts/generate_fillers.py")
+        return
+    loaded = []
+    for path in fillers_dir.glob("*_22050.raw"):
+        lang = path.stem.replace("_22050", "")
+        FILLER_CACHE[lang] = path.read_bytes()
+        loaded.append(lang)
     if "en-IN" in FILLER_CACHE:
         FILLER_CACHE["default"] = FILLER_CACHE["en-IN"]
-    ms = (time.perf_counter() - t0) * 1000
-    print(f"done ({ms:.0f}ms) — fillers cached for {list(FILLER_CACHE.keys())}")
+    print(f"✅ Filler audio loaded from disk: {loaded} (0ms, no API call)")
 
 
 def split_sentences(text: str) -> list[str]:
@@ -349,8 +348,8 @@ def main():
         print("     Add AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY to .env")
     print("  Type 'q' + ENTER to quit\n")
 
-    # Warm up filler cache — synthesize once, play instantly on every turn
-    warmup_fillers()
+    # Load pre-generated filler audio from disk (0ms, consistent voice)
+    load_fillers()
     print()
 
     history = []
