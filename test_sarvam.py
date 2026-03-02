@@ -131,48 +131,61 @@ def split_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
-async def _stream_tts_play(text: str, lang: str) -> float:
-    """WebSocket streaming TTS — play chunks as they arrive.
-    First audio starts in ~400ms. Returns total ms."""
+async def _stream_tts_play(text: str, lang: str) -> tuple[float, float]:
+    """WebSocket streaming TTS using sarvamai SDK.
+    - MP3 codec (only supported), bulbul:v2 speakers
+    - Decodes each MP3 chunk with pydub → writes to continuous sd.OutputStream
+    - First audio plays at ~900ms, no garbling, no gaps
+    Returns (total_ms, ttfa_ms).
+    """
+    # bulbul:v2 speakers (only v2 supported on streaming endpoint)
     speaker = {
-        "hi-IN": "kavya", "ta-IN": "kavitha", "te-IN": "gokul",
-        "en-IN": "anand", "en-US": "anand",
-    }.get(lang, "kavya")
+        "hi-IN": "anushka", "ta-IN": "anushka", "te-IN": "abhilash",
+        "mr-IN": "manisha", "kn-IN": "vidya",
+        "en-IN": "anushka", "en-US": "anushka",
+    }.get(lang, "anushka")
 
-    uri = "wss://api.sarvam.ai/text-to-speech/ws?model=bulbul:v3-beta&send_completion_event=true"
-    headers = {"Api-Subscription-Key": SARVAM_API_KEY}
+    from sarvamai import AsyncSarvamAI, AudioOutput
+    from pydub import AudioSegment
+    client = AsyncSarvamAI(api_subscription_key=SARVAM_API_KEY)
+
     t0 = time.perf_counter()
     ttfa = None
+    chunks = 0
 
-    async with websockets.connect(uri, additional_headers=headers) as ws:
-        await ws.send(json.dumps({"type": "config", "data": {
-            "target_language_code": lang, "speaker": speaker,
-            "pace": 1.0, "speech_sample_rate": str(TTS_SR),
-            "model": "bulbul:v3-beta", "output_audio_codec": "linear16",
-        }}))
-        await ws.send(json.dumps({"type": "text", "data": {"text": text}}))
-        await ws.send(json.dumps({"type": "flush"}))
+    with sd.OutputStream(samplerate=TTS_SR, channels=1, dtype="int16") as stream:
+        async with client.text_to_speech_streaming.connect(
+            model="bulbul:v2", send_completion_event=True,
+        ) as ws:
+            await ws.configure(
+                target_language_code=lang, speaker=speaker,
+                pace=1.0, speech_sample_rate=TTS_SR,
+                output_audio_codec="mp3", output_audio_bitrate="128k",
+                min_buffer_size=50, max_chunk_length=200,
+            )
+            await ws.convert(text)
+            await ws.flush()
 
-        try:
             async for message in ws:
-                msg = json.loads(message)
-                if msg["type"] == "audio":
+                if isinstance(message, AudioOutput):
                     if ttfa is None:
                         ttfa = (time.perf_counter() - t0) * 1000
-                    pcm = base64.b64decode(msg["data"]["audio"])
-                    play_audio(pcm)
-                elif msg["type"] == "event":
+                    mp3_bytes = base64.b64decode(message.data.audio)
+                    seg = AudioSegment.from_mp3(io.BytesIO(mp3_bytes))
+                    if seg.channels != 1:
+                        seg = seg.set_channels(1)
+                    arr = np.array(seg.get_array_of_samples(), dtype=np.int16)
+                    stream.write(arr)
+                    chunks += 1
+                else:
                     break
-                elif msg["type"] == "error":
-                    break
-        except websockets.exceptions.ConnectionClosed:
-            pass
 
-    return (time.perf_counter() - t0) * 1000, ttfa or 0
+    total_ms = (time.perf_counter() - t0) * 1000
+    return total_ms, ttfa or 0
 
 
 def run_tts_streaming(text: str, lang: str) -> tuple[float, float]:
-    """Sync wrapper for WebSocket streaming TTS. Returns (total_ms, ttfa_ms)."""
+    """Sync wrapper for streaming TTS. Returns (total_ms, ttfa_ms)."""
     return asyncio.run(_stream_tts_play(text, lang))
 
 

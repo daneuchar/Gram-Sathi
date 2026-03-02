@@ -18,6 +18,10 @@ dependencies = [
     "pandas>=2.2.0",
     "python-multipart>=0.0.22",
     "aiosqlite>=0.20.0",
+    "sounddevice>=0.5.5",
+    "numpy>=2.4.2",
+    "sarvamai>=0.1.25",
+    "pydub>=0.25.1",
 ]
 
 [project.optional-dependencies]
