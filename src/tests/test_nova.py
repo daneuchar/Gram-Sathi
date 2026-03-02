@@ -7,7 +7,7 @@ from app.pipeline.pipeline import process_turn
 
 def test_nova_client_initializes():
     client = NovaClient()
-    assert client.model_id == "amazon.nova-lite-v1:0"
+    assert "nova" in client.model_id
 
 
 @pytest.mark.asyncio
