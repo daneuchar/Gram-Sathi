@@ -10,7 +10,10 @@ Controls:
     Press ENTER again to stop
     Type 'q' + ENTER to quit
 """
+import asyncio
+import base64
 import io
+import json
 import os
 import re
 import time
@@ -24,6 +27,7 @@ import boto3
 import httpx
 import numpy as np
 import sounddevice as sd
+import websockets
 
 # ── Config ────────────────────────────────────────────────────────────────────
 SARVAM_API_KEY  = os.environ["SARVAM_API_KEY"]
@@ -125,6 +129,51 @@ def split_sentences(text: str) -> list[str]:
     """Split on sentence-ending punctuation."""
     parts = re.split(r"(?<=[।.!?])\s+", text.strip())
     return [p.strip() for p in parts if p.strip()]
+
+
+async def _stream_tts_play(text: str, lang: str) -> float:
+    """WebSocket streaming TTS — play chunks as they arrive.
+    First audio starts in ~400ms. Returns total ms."""
+    speaker = {
+        "hi-IN": "kavya", "ta-IN": "kavitha", "te-IN": "gokul",
+        "en-IN": "anand", "en-US": "anand",
+    }.get(lang, "kavya")
+
+    uri = "wss://api.sarvam.ai/text-to-speech/ws?model=bulbul:v3-beta&send_completion_event=true"
+    headers = {"Api-Subscription-Key": SARVAM_API_KEY}
+    t0 = time.perf_counter()
+    ttfa = None
+
+    async with websockets.connect(uri, additional_headers=headers) as ws:
+        await ws.send(json.dumps({"type": "config", "data": {
+            "target_language_code": lang, "speaker": speaker,
+            "pace": 1.0, "speech_sample_rate": str(TTS_SR),
+            "model": "bulbul:v3-beta", "output_audio_codec": "linear16",
+        }}))
+        await ws.send(json.dumps({"type": "text", "data": {"text": text}}))
+        await ws.send(json.dumps({"type": "flush"}))
+
+        try:
+            async for message in ws:
+                msg = json.loads(message)
+                if msg["type"] == "audio":
+                    if ttfa is None:
+                        ttfa = (time.perf_counter() - t0) * 1000
+                    pcm = base64.b64decode(msg["data"]["audio"])
+                    play_audio(pcm)
+                elif msg["type"] == "event":
+                    break
+                elif msg["type"] == "error":
+                    break
+        except websockets.exceptions.ConnectionClosed:
+            pass
+
+    return (time.perf_counter() - t0) * 1000, ttfa or 0
+
+
+def run_tts_streaming(text: str, lang: str) -> tuple[float, float]:
+    """Sync wrapper for WebSocket streaming TTS. Returns (total_ms, ttfa_ms)."""
+    return asyncio.run(_stream_tts_play(text, lang))
 
 
 def play_tts_with_overlap(text: str, lang: str) -> float:
@@ -363,10 +412,10 @@ def main():
             final_response = english_response
             tr_out_ms = 0
 
-        # ── 7. TTS with sentence overlap — play sentence N while synthesizing N+1
-        print(f"🔊 Speaking (sentence overlap)...")
-        t_tts = time.perf_counter()
-        total_tts_ms = play_tts_with_overlap(final_response, lang)
+        # ── 7. WebSocket streaming TTS — first audio in ~400ms, plays as chunks arrive
+        print(f"🔊 Speaking (streaming)...")
+        total_tts_ms, ttfa_tts_ms = run_tts_streaming(final_response, lang)
+        print(f"   First audio: {ttfa_tts_ms:.0f}ms | Total: {total_tts_ms:.0f}ms")
 
         # ── 8. Latency summary ────────────────────────────────────────────────
         total_ms = (time.perf_counter() - t_turn_start) * 1000

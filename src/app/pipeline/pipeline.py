@@ -5,7 +5,7 @@ from collections.abc import Callable, Awaitable
 from app.pipeline.nova_client import NovaClient
 from app.pipeline.sarvam_asr import transcribe
 from app.pipeline.sarvam_translate import from_english, ENGLISH_LANGS
-from app.pipeline.sarvam_tts import synthesize
+from app.pipeline.sarvam_tts import synthesize, synthesize_streaming
 
 logger = logging.getLogger(__name__)
 
@@ -84,9 +84,9 @@ async def process_turn(
     else:
         response_in_user_lang = await from_english(english_response, detected_lang)
 
-    # 4. Single TTS call — full response, no pauses
+    # 4. WebSocket streaming TTS — first audio chunk in ~400ms, no waiting for full synthesis
     if response_in_user_lang and audio_send_callback:
-        response_audio = await synthesize(response_in_user_lang, detected_lang)
-        await audio_send_callback(response_audio)
+        async for audio_chunk in synthesize_streaming(response_in_user_lang, detected_lang):
+            await audio_send_callback(audio_chunk)
 
     return (english_transcript, detected_lang)
