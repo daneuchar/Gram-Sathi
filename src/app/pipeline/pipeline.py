@@ -5,7 +5,7 @@ from collections.abc import Callable, Awaitable
 from app.pipeline.nova_client import NovaClient
 from app.pipeline.sarvam_asr import transcribe
 from app.pipeline.sarvam_translate import from_english, ENGLISH_LANGS
-from app.pipeline.sarvam_tts import synthesize, synthesize_streaming
+from app.pipeline.sarvam_tts import get_filler_audio, synthesize_streaming
 
 logger = logging.getLogger(__name__)
 
@@ -60,19 +60,18 @@ async def process_turn(
     # Recheck if English now that we have detected language
     is_english = detected_lang in ENGLISH_LANGS
 
-    # 2. Filler TTS + Nova run concurrently — farmer hears filler immediately
-    filler_text = FILLER_PHRASES.get(detected_lang, DEFAULT_FILLER)
-    filler_task = asyncio.create_task(synthesize(filler_text, detected_lang))
+    # 2. Filler — load from pre-generated file (0ms, no API call)
+    #    Same voice as streaming response (bulbul:v2 anushka)
+    filler_audio = get_filler_audio(detected_lang, sample_rate=8000)
+    if filler_audio and audio_send_callback:
+        await audio_send_callback(filler_audio)
 
+    # Nova runs while filler is playing
     messages = list(conversation_history)
     messages.append({"role": "user", "content": [{"text": english_transcript}]})
     nova_task = asyncio.create_task(
         nova_client.generate(user_text="", conversation_history=messages)
     )
-
-    filler_audio = await filler_task
-    if audio_send_callback:
-        await audio_send_callback(filler_audio)
 
     english_response = await nova_task
     if not english_response or isinstance(english_response, dict):
