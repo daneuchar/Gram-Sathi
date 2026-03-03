@@ -2,6 +2,7 @@ import asyncio
 import base64
 import io
 import logging
+import random
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
@@ -46,11 +47,9 @@ def get_filler_audio(language_code: str, category: str = "generic", sample_rate:
     Falls back to 'generic' if the requested category has no files.
     Returns None for category='none' or if no audio is available.
     """
-    import random
     if category == "none":
         return None
-    lang = language_code if language_code in FILLER_AUDIO else "en-IN"
-    lang_cache = FILLER_AUDIO.get(lang, {})
+    lang_cache = FILLER_AUDIO.get(language_code, {})
     variants = lang_cache.get(category, {}).get(sample_rate)
     if not variants:
         variants = lang_cache.get("generic", {}).get(sample_rate)
