@@ -56,7 +56,7 @@ Instructions:
 - Never use digits — spell out all numbers as words.
 """
 
-_PROFILE_RE = re.compile(r'<<<PROFILE:(\{.*?\})>>>', re.DOTALL)
+_PROFILE_RE = re.compile(r'<<<PROFILE:(\{.*?\})>>>')
 
 
 def extract_profile_marker(response: str) -> tuple[dict | None, str]:
@@ -71,7 +71,9 @@ def extract_profile_marker(response: str) -> tuple[dict | None, str]:
     try:
         profile = json.loads(match.group(1))
     except json.JSONDecodeError:
-        return None, response
+        logger.warning("Malformed PROFILE marker in response: %r", match.group(1))
+        clean = _PROFILE_RE.sub("", response).strip()
+        return None, clean
     clean = _PROFILE_RE.sub("", response).strip()
     return profile, clean
 

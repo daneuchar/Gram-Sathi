@@ -28,4 +28,14 @@ def test_extract_profile_marker_strips_whitespace():
     response = "Great!  <<<PROFILE:{\"name\":\"Anita\",\"state\":\"Punjab\",\"district\":\"Ludhiana\"}>>>\n\nNamaste Anita!"
     profile, clean = extract_profile_marker(response)
     assert profile["name"] == "Anita"
-    assert "Namaste Anita!" in clean.strip()
+    assert "<<<PROFILE:" not in clean
+    assert "Namaste Anita!" in clean
+    assert "Great!" in clean
+
+
+def test_extract_profile_marker_malformed_json():
+    response = "Here <<<PROFILE:{name: Ramesh, state: TN}>>> done"
+    profile, clean = extract_profile_marker(response)
+    assert profile is None
+    assert "<<<PROFILE:" not in clean  # marker must be stripped even on parse failure
+    assert "done" in clean
