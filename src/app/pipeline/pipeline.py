@@ -242,7 +242,11 @@ async def process_turn_streaming(
         state = farmer_profile.get("state", "")
         district = farmer_profile.get("district", "")
         from app.pipeline.nova_client import SYSTEM_PROMPT
-        profile_ctx = f"Farmer profile — Name: {name}, State: {state}, District: {district}. Default weather and mandi queries to this farmer's state and district unless they specify otherwise."
+        profile_ctx = (
+            f"Farmer profile — Name: {name}, State: {state}, District: {district}. "
+            f"When the farmer greets you or starts the conversation, warmly greet them by name (e.g. 'Namaste {name}!'). "
+            f"Default weather and mandi queries to this farmer's state and district unless they specify otherwise."
+        )
         effective_prompt = SYSTEM_PROMPT + "\n\n" + profile_ctx
 
     english_response = await nova_client.generate(
