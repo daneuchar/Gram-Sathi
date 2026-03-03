@@ -25,8 +25,8 @@ _WEATHER_KW = {
     'wind', 'storm', 'cloud', 'sunny', 'hot', 'cold', 'humid', 'monsoon',
 }
 _SCHEME_KW = {
-    'scheme', 'subsidy', 'government', 'kisan', 'eligib',
-    'benefit', 'loan', 'insurance', 'fasal', 'pm-kisan', 'yojana',
+    'scheme', 'subsidy', 'government', 'kisan', 'eligible', 'eligibility',
+    'benefit', 'loan', 'insurance', 'fasal', 'yojana',
 }
 _QUESTION_WORDS = {'what', 'when', 'where', 'who', 'why', 'how', 'which', 'is', 'are', 'will', 'can', 'do', 'does'}
 
