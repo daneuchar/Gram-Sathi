@@ -19,27 +19,44 @@ FILLERS_DIR  = Path(__file__).parent.parent / "assets" / "fillers"
 # Pre-generated filler audio loaded from disk (no API call on startup).
 # Generated once by: uv run python scripts/generate_fillers.py
 # Files use bulbul:v2 + anushka — same voice as streaming TTS response.
-def _load_filler_cache() -> dict[str, dict[int, bytes]]:
-    cache: dict[str, dict[int, bytes]] = {}
+def _load_filler_cache() -> dict[str, dict[str, dict[int, list[bytes]]]]:
+    cache: dict[str, dict[str, dict[int, list[bytes]]]] = {}
     if not FILLERS_DIR.exists():
         return cache
     for path in FILLERS_DIR.glob("*.raw"):
-        # filename format: hi-IN_8000.raw
+        # filename: {lang_part1}_{lang_part2}_{category}_{index}_{sample_rate}.raw
+        # e.g. hi_IN_generic_0_8000
         parts = path.stem.split("_")
-        if len(parts) == 2:
-            lang, sr_str = parts
-            sr = int(sr_str)
-            cache.setdefault(lang, {})[sr] = path.read_bytes()
+        if len(parts) == 5:
+            lang = f"{parts[0]}-{parts[1]}"  # hi_IN → hi-IN
+            category = parts[2]
+            sr = int(parts[4])
+            audio = path.read_bytes()
+            cache.setdefault(lang, {}).setdefault(category, {}).setdefault(sr, []).append(audio)
     return cache
 
-FILLER_AUDIO: dict[str, dict[int, bytes]] = _load_filler_cache()
+
+FILLER_AUDIO: dict[str, dict[str, dict[int, list[bytes]]]] = _load_filler_cache()
 logger.info("Loaded filler audio for: %s", list(FILLER_AUDIO.keys()))
 
 
-def get_filler_audio(language_code: str, sample_rate: int = 8000) -> bytes | None:
-    """Return pre-generated filler audio bytes, or None if not found."""
+def get_filler_audio(language_code: str, category: str = "generic", sample_rate: int = 8000) -> bytes | None:
+    """Return a randomly chosen pre-generated filler audio for the given category.
+
+    Falls back to 'generic' if the requested category has no files.
+    Returns None for category='none' or if no audio is available.
+    """
+    import random
+    if category == "none":
+        return None
     lang = language_code if language_code in FILLER_AUDIO else "en-IN"
-    return FILLER_AUDIO.get(lang, {}).get(sample_rate)
+    lang_cache = FILLER_AUDIO.get(lang, {})
+    variants = lang_cache.get(category, {}).get(sample_rate)
+    if not variants:
+        variants = lang_cache.get("generic", {}).get(sample_rate)
+    if not variants:
+        return None
+    return random.choice(variants)
 
 
 # bulbul:v3 speakers — kept for non-filler REST synthesis if ever needed
