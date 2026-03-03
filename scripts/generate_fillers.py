@@ -1,11 +1,13 @@
 """
-Generate filler phrase audio files using bulbul:v2 + anushka (matching streaming voice).
-Saves MP3 files to src/app/assets/fillers/.
+Generate filler phrase audio files for all categories using bulbul:v2 + anushka.
+Saves raw PCM files to src/app/assets/fillers/ using naming:
+  {lang_underscored}_{category}_{index}_{sample_rate}.raw
+  e.g. hi_IN_generic_0_8000.raw
 
 Run once:
     PYTHONPATH=src uv run python scripts/generate_fillers.py
 
-Files are committed to git — no API calls needed on subsequent runs.
+Commit the generated files — no API calls needed on subsequent runs.
 """
 import base64
 import httpx
@@ -24,16 +26,61 @@ if not API_KEY:
 ASSETS_DIR = Path(__file__).parent.parent / "src" / "app" / "assets" / "fillers"
 ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Filler phrases — same model (bulbul:v2) and speaker (anushka) as streaming TTS
-# so voice is consistent with the response audio
-FILLERS = {
-    "hi-IN": "हाँ जी, एक पल।",
-    "ta-IN": "சரி, ஒரு நிமிடம்.",
-    "en-IN": "One moment.",
+FILLERS: dict[str, dict[str, list[str]]] = {
+    "hi-IN": {
+        "generic": [
+            "हाँ जी, एक पल।",
+            "देखते हैं।",
+            "समझ गया, थोड़ा रुकिए।",
+        ],
+        "mandi": [
+            "मंडी भाव देख रहा हूँ।",
+            "कीमत जांच रहा हूँ।",
+        ],
+        "weather": [
+            "मौसम की जानकारी ले रहा हूँ।",
+        ],
+        "scheme": [
+            "सरकारी योजनाएं देख रहा हूँ।",
+        ],
+    },
+    "ta-IN": {
+        "generic": [
+            "சரி, ஒரு நிமிடம்.",
+            "பார்க்கிறேன்.",
+            "புரிந்தது, கொஞ்சம் நிறுத்துங்கள்.",
+        ],
+        "mandi": [
+            "விலை சரிபார்க்கிறேன்.",
+            "மண்டி விலை பார்க்கிறேன்.",
+        ],
+        "weather": [
+            "வானிலை தகவல் எடுக்கிறேன்.",
+        ],
+        "scheme": [
+            "அரசு திட்டங்கள் பார்க்கிறேன்.",
+        ],
+    },
+    "en-IN": {
+        "generic": [
+            "One moment.",
+            "Let me check.",
+        ],
+        "mandi": [
+            "Checking market prices.",
+        ],
+        "weather": [
+            "Getting weather information.",
+        ],
+        "scheme": [
+            "Looking up government schemes.",
+        ],
+    },
 }
 
-SPEAKER = "anushka"   # matches streaming TTS speaker
-MODEL   = "bulbul:v2" # matches streaming TTS model
+SPEAKER = "anushka"
+MODEL   = "bulbul:v2"
+SAMPLE_RATES = [8000, 22050]
 
 
 def generate(lang: str, text: str, sample_rate: int) -> bytes:
@@ -54,23 +101,18 @@ def generate(lang: str, text: str, sample_rate: int) -> bytes:
     return base64.b64decode(resp.json()["audios"][0])
 
 
-print(f"Generating filler audio with {MODEL} / {SPEAKER}...")
+print(f"Generating fillers with {MODEL} / {SPEAKER}...")
 print(f"Output: {ASSETS_DIR}\n")
 
-for lang, text in FILLERS.items():
-    print(f"[{lang}] {text!r}")
-
-    # 8kHz — for Exotel phone calls
-    audio_8k = generate(lang, text, 8000)
-    path_8k = ASSETS_DIR / f"{lang}_8000.raw"
-    path_8k.write_bytes(audio_8k)
-    print(f"  8kHz  → {path_8k.name} ({len(audio_8k):,} bytes)")
-
-    # 22050Hz — for local playback / testing
-    audio_22k = generate(lang, text, 22050)
-    path_22k = ASSETS_DIR / f"{lang}_22050.raw"
-    path_22k.write_bytes(audio_22k)
-    print(f"  22050Hz → {path_22k.name} ({len(audio_22k):,} bytes)")
+for lang, categories in FILLERS.items():
+    for category, phrases in categories.items():
+        for idx, text in enumerate(phrases):
+            print(f"[{lang}] [{category}] [{idx}] {text!r}")
+            for sr in SAMPLE_RATES:
+                audio = generate(lang, text, sr)
+                filename = f"{lang.replace('-', '_')}_{category}_{idx}_{sr}.raw"
+                path = ASSETS_DIR / filename
+                path.write_bytes(audio)
+                print(f"  {sr}Hz → {filename} ({len(audio):,} bytes)")
 
 print("\nDone. Commit the generated files to git.")
-print("They load from disk — no API call needed on startup.")
