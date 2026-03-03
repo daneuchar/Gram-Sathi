@@ -70,6 +70,14 @@ def _expand_numbers(text: str) -> str:
     return _NUMBER_RE.sub(_replace, text)
 
 
+_MARKDOWN_RE = re.compile(r'[*_`#~>]+')
+
+
+def _strip_markdown(text: str) -> str:
+    """Remove markdown symbols so TTS doesn't speak 'asterisk asterisk'."""
+    return _MARKDOWN_RE.sub('', text).strip()
+
+
 _SENTENCE_RE = re.compile(r'(?<=[.!?।])\s+')
 
 
@@ -249,6 +257,7 @@ async def process_turn_streaming(
         await audio_queue.put(None)
         return (transcript, detected_lang, "")
 
+    english_response = _strip_markdown(english_response)
     english_response = _expand_numbers(english_response)
 
     # 4. Sentence-level parallel translate + TTS
