@@ -222,6 +222,11 @@ async def process_turn_streaming(
         await audio_queue.put(None)
         return ("", detected_lang, "")
 
+    # Respect farmer's stored language preference over one-turn ASR detection
+    # (e.g. a Tamil farmer saying "Namaste" shouldn't get a Hindi response)
+    if farmer_profile and farmer_profile.get("language"):
+        detected_lang = farmer_profile["language"]
+
     is_english = detected_lang in ENGLISH_LANGS
 
     # 2. Filler — classify transcript, play contextual audio (0ms, no API call)
