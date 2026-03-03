@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import gradio as gr
 from fastapi import FastAPI
 from fastrtc import Stream
 
@@ -20,6 +21,12 @@ async def health():
     return {"status": "ok", "service": "gram-saathi"}
 
 
+phone_input = gr.Textbox(
+    label="Phone Number",
+    placeholder="+91XXXXXXXXXX",
+    max_lines=1,
+)
+
 # FastRTC mounts all voice endpoints:
 #   POST /telephone/incoming  — Twilio TwiML webhook
 #   WS   /telephone/handler   — Twilio Media Stream WebSocket
@@ -29,11 +36,11 @@ stream = Stream(
     GramSaathiHandler(),
     modality="audio",
     mode="send-receive",
+    additional_inputs=[phone_input],
 )
 stream.mount(app)
 
-# Mount the Gradio UI at / for the browser demo
-import gradio as gr
+# Mount the Gradio UI at /demo for the browser demo
 gr.mount_gradio_app(app, stream._ui, path="/demo")
 
 from app.routers import webhooks, dashboard
