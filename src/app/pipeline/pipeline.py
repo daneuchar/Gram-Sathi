@@ -15,13 +15,39 @@ from app.tools.registry import NOVA_TOOLS, execute_tool
 
 logger = logging.getLogger(__name__)
 
-FILLER_PHRASES = {
-    "hi-IN": "हाँ जी, एक पल।",
-    "ta-IN": "சரி, ஒரு நிமிடம்.",
-    "en-IN": "One moment.",
-    "en-US": "One moment.",
+_MANDI_KW = {
+    'price', 'rate', 'mandi', 'market', 'cost',
+    'tomato', 'onion', 'wheat', 'rice', 'potato', 'cotton',
+    'maize', 'soybean', 'groundnut', 'sugarcane', 'chilli',
 }
-DEFAULT_FILLER = "One moment."
+_WEATHER_KW = {
+    'weather', 'rain', 'rainfall', 'forecast', 'temperature',
+    'wind', 'storm', 'cloud', 'sunny', 'hot', 'cold', 'humid', 'monsoon',
+}
+_SCHEME_KW = {
+    'scheme', 'subsidy', 'government', 'kisan', 'eligib',
+    'benefit', 'loan', 'insurance', 'fasal', 'pm-kisan', 'yojana',
+}
+_QUESTION_WORDS = {'what', 'when', 'where', 'who', 'why', 'how', 'which', 'is', 'are', 'will', 'can', 'do', 'does'}
+
+
+def _classify_filler(transcript: str) -> str:
+    """Classify transcript into a filler category for context-aware audio selection."""
+    words = transcript.lower().split()
+    word_set = set(words)
+
+    if word_set & _MANDI_KW:
+        return 'mandi'
+    if word_set & _WEATHER_KW:
+        return 'weather'
+    if word_set & _SCHEME_KW:
+        return 'scheme'
+
+    if len(words) <= 4 and '?' not in transcript and not (word_set & _QUESTION_WORDS):
+        return 'none'
+
+    return 'generic'
+
 
 nova_client = NovaClient()
 
@@ -119,9 +145,9 @@ async def process_turn(
     # Recheck if English now that we have detected language
     is_english = detected_lang in ENGLISH_LANGS
 
-    # 2. Filler — load from pre-generated file (0ms, no API call)
-    #    Same voice as streaming response (bulbul:v2 anushka)
-    filler_audio = get_filler_audio(detected_lang, sample_rate=8000)
+    # 2. Filler — classify transcript, play contextual audio (0ms, no API call)
+    filler_category = _classify_filler(english_transcript)
+    filler_audio = get_filler_audio(detected_lang, filler_category, sample_rate=8000)
     if filler_audio and audio_send_callback:
         await audio_send_callback(filler_audio)
 
@@ -189,8 +215,9 @@ async def process_turn_streaming(
 
     is_english = detected_lang in ENGLISH_LANGS
 
-    # 2. Filler — pre-generated file, 0ms
-    filler = get_filler_audio(detected_lang, sample_rate=sample_rate)
+    # 2. Filler — classify transcript, play contextual audio (0ms, no API call)
+    filler_category = _classify_filler(transcript)
+    filler = get_filler_audio(detected_lang, filler_category, sample_rate=sample_rate)
     if filler:
         arr = np.frombuffer(filler, dtype=np.int16).copy()
         await audio_queue.put((sample_rate, arr))
