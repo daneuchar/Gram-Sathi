@@ -87,10 +87,9 @@ class GramSaathiHandler(ReplyOnPause):
         """Load or create user on first turn. Sets is_onboarding + farmer_profile."""
         if self._profile_loaded:
             return
-        self._profile_loaded = True
         self.phone = phone
-
         user = await get_or_create_user(phone)
+        self._profile_loaded = True  # only set after successful DB lookup
         if self._is_new_user(user):
             self.is_onboarding = True
             self.farmer_profile = None
