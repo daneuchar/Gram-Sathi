@@ -8,6 +8,7 @@ def test_handler_init_defaults():
     assert h.phone is None
     assert h.is_onboarding is False
     assert h.farmer_profile is None
+    assert h._profile_loaded is False
     assert h.conversation_history == []
 
 
