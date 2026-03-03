@@ -186,6 +186,7 @@ async def process_turn_streaming(
     language_code: str,
     audio_queue: asyncio.Queue,
     sample_rate: int = 8000,
+    system_prompt: str | None = None,
 ) -> tuple[str, str, str]:
     """Process one voice turn with sentence-level parallel TTS pipelining.
 
@@ -225,11 +226,23 @@ async def process_turn_streaming(
     # 3. Nova — non-streaming, handles tool calls correctly
     messages = list(conversation_history)
     messages.append({"role": "user", "content": [{"text": transcript}]})
+
+    # Inject farmer profile as context preamble if available
+    effective_prompt = system_prompt
+    if effective_prompt is None and farmer_profile:
+        name = farmer_profile.get("name", "")
+        state = farmer_profile.get("state", "")
+        district = farmer_profile.get("district", "")
+        from app.pipeline.nova_client import SYSTEM_PROMPT
+        profile_ctx = f"Farmer profile — Name: {name}, State: {state}, District: {district}. Default weather and mandi queries to this farmer's state and district unless they specify otherwise."
+        effective_prompt = SYSTEM_PROMPT + "\n\n" + profile_ctx
+
     english_response = await nova_client.generate(
         user_text="",
         conversation_history=messages,
         tools=NOVA_TOOLS,
         tool_executor=execute_tool,
+        system_prompt=effective_prompt,
     )
 
     if not english_response or isinstance(english_response, dict):
