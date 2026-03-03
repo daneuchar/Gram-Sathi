@@ -9,7 +9,7 @@ from fastrtc import ReplyOnPause
 
 from app.database import get_or_create_user, update_user_profile
 from app.models.user import User
-from app.pipeline.nova_client import ONBOARDING_PROMPT, extract_profile_marker
+from app.pipeline.nova_client import ONBOARDING_PROMPT, extract_lang_marker, extract_profile_marker
 from app.pipeline.pipeline import process_turn_streaming
 
 logger = logging.getLogger(__name__)
@@ -75,6 +75,7 @@ class GramSaathiHandler(ReplyOnPause):
         self.is_onboarding: bool = False
         self.farmer_profile: dict | None = None
         self._profile_loaded: bool = False
+        self._language_confirmed: bool = False  # True once language preference is locked
 
     def copy(self) -> "GramSaathiHandler":
         """Called by FastRTC for each new WebRTC/Twilio connection."""
@@ -105,6 +106,7 @@ class GramSaathiHandler(ReplyOnPause):
             }
             if user.language:
                 self.language_code = user.language
+                self._language_confirmed = True
             logger.info("[PROFILE] Returning user %s — %s", phone, user.name)
 
     async def _reply_fn(self, audio: tuple[int, np.ndarray], webrtc_id: str = "", phone: str = "") -> AsyncGenerator:
@@ -145,6 +147,16 @@ class GramSaathiHandler(ReplyOnPause):
 
         transcript, detected_lang, english_response = await task
 
+        # Check for LANG marker (step 2 of onboarding — language chosen before name/location)
+        if self.is_onboarding and english_response and not self._language_confirmed:
+            lang_code, english_response = extract_lang_marker(english_response)
+            if lang_code:
+                self.language_code = lang_code
+                self._language_confirmed = True
+                # Set minimal profile so pipeline.py uses this language for TTS immediately
+                self.farmer_profile = {"language": lang_code}
+                logger.info("[ONBOARD] Language confirmed for %s: %s", self.phone, lang_code)
+
         # Check for PROFILE marker when onboarding
         if self.is_onboarding and english_response:
             profile_data, english_response = extract_profile_marker(english_response)
@@ -166,6 +178,7 @@ class GramSaathiHandler(ReplyOnPause):
                     "language": profile_language,
                 }
                 self.language_code = profile_language
+                self._language_confirmed = True
                 self.is_onboarding = False
                 logger.info("[ONBOARD] Profile saved for %s: %s (lang=%s)", self.phone, profile_data, profile_language)
 
@@ -177,6 +190,8 @@ class GramSaathiHandler(ReplyOnPause):
                 self.conversation_history.append(
                     {"role": "assistant", "content": [{"text": english_response}]}
                 )
-            self.language_code = detected_lang
-            logger.info("[%s] user: %s", detected_lang, transcript)
-            logger.info("[%s] assistant: %s", detected_lang, english_response)
+            # Only follow ASR language detection if the farmer has no confirmed preference
+            if not self._language_confirmed:
+                self.language_code = detected_lang
+            logger.info("[%s] user: %s", self.language_code, transcript)
+            logger.info("[%s] assistant: %s", self.language_code, english_response)
