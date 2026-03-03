@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from collections.abc import AsyncGenerator
 from typing import Any
 
@@ -9,13 +10,70 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = (
-    "You are Gram Saathi, a voice assistant for Indian farmers. "
-    "Always respond in English — responses will be translated to the farmer's language automatically. "
-    "Keep replies under 3 short sentences — this is a phone call, be concise. "
-    "Always use tools for real data — never guess prices, weather, or schemes. "
-    "When you don't have a tool for something, say so clearly in one sentence."
-)
+SYSTEM_PROMPT = """
+You are Gram Saathi, a helpful voice assistant for Indian farmers.
+
+Language:
+- Always respond in English. The system will translate to the farmer's language.
+- Use simple, clear spoken English suitable for phone conversations.
+
+Response Style:
+- Keep responses under three short sentences.
+- Be concise but complete.
+- Sound natural and conversational for voice, not robotic.
+
+Accuracy:
+- Always use available tools for real-time data such as prices, weather, or government schemes.
+- Never guess or fabricate factual information.
+- If no tool is available, say clearly in one sentence that you do not have that information.
+
+Number Formatting (Critical):
+- Always spell out numbers and prices in English words.
+- Never use digits or symbols.
+- Examples:
+  - Say "twelve hundred rupees per quintal" not "1200 rupees per quintal"
+  - Say "twenty five percent" not "25%"
+  - Say "three to five days" not "3 to 5 days"
+
+Tone:
+- Be polite, supportive, and respectful to farmers.
+- Prefer short, spoken-friendly phrasing.
+"""
+
+ONBOARDING_PROMPT = """
+You are Gram Saathi, a voice assistant for Indian farmers.
+
+This farmer is calling for the first time. Your job is to warmly welcome them and collect their profile in a natural conversation.
+
+Instructions:
+- Detect the language from their first utterance and respond in that same language throughout.
+- Welcome them warmly, then ask for their name.
+- After they give their name, ask for their state and district or village.
+- Once you have name, state, and district, output this marker on its own line:
+  <<<PROFILE:{"name":"<name>","state":"<state>","district":"<district>"}>>>
+- Immediately after the marker, greet them by name and offer to help with farming questions.
+- Keep responses short and spoken-friendly.
+- Never use digits — spell out all numbers as words.
+"""
+
+_PROFILE_RE = re.compile(r'<<<PROFILE:(\{.*?\})>>>', re.DOTALL)
+
+
+def extract_profile_marker(response: str) -> tuple[dict | None, str]:
+    """Extract <<<PROFILE:{...}>>> from Nova response.
+
+    Returns (profile_dict, cleaned_response).
+    profile_dict is None if no marker found.
+    """
+    match = _PROFILE_RE.search(response)
+    if not match:
+        return None, response
+    try:
+        profile = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return None, response
+    clean = _PROFILE_RE.sub("", response).strip()
+    return profile, clean
 
 
 class NovaClient:
@@ -59,29 +117,49 @@ class NovaClient:
         farmer_profile: dict | None = None,
         conversation_history: list[dict] | None = None,
         tools: list[dict] | None = None,
+        tool_executor=None,
         language_code: str = "unknown",
+        system_prompt: str | None = None,
     ) -> str:
-        """Non-streaming fallback for tool follow-ups. Input is always English."""
+        """Non-streaming call with tool execution loop. Input is always English."""
         messages = list(conversation_history or [])
         if user_text:
             messages.append({"role": "user", "content": [{"text": user_text}]})
 
-        kwargs = self._build_kwargs(messages, tools)
-        response = await self._call_bedrock(kwargs)
+        for _ in range(5):  # max tool rounds
+            kwargs = self._build_kwargs(messages, tools, system_prompt)
+            response = await self._call_bedrock(kwargs)
 
-        output = response.get("output", {})
-        message = output.get("message", {})
-        parts = message.get("content", [])
+            output_msg = response.get("output", {}).get("message", {})
+            parts = output_msg.get("content", [])
 
-        text_parts = [p["text"] for p in parts if "text" in p]
-        return " ".join(text_parts)
+            tool_uses = [p for p in parts if "toolUse" in p]
+            if not tool_uses or tool_executor is None:
+                text_parts = [p["text"] for p in parts if "text" in p]
+                return " ".join(text_parts)
+
+            # Execute all tool calls and feed results back
+            messages.append({"role": "assistant", "content": parts})
+            tool_results = []
+            for block in tool_uses:
+                tu = block["toolUse"]
+                result = tool_executor(tu["name"], tu["input"])
+                tool_results.append({
+                    "toolResult": {
+                        "toolUseId": tu["toolUseId"],
+                        "content": [{"json": result}],
+                    }
+                })
+            messages.append({"role": "user", "content": tool_results})
+
+        return ""
 
     def _build_kwargs(
-        self, messages: list[dict], tools: list[dict] | None
+        self, messages: list[dict], tools: list[dict] | None, system_prompt: str | None = None
     ) -> dict[str, Any]:
         kwargs: dict[str, Any] = {
             "modelId": self.model_id,
-            "system": [{"text": SYSTEM_PROMPT}],
+            "system": [{"text": system_prompt or SYSTEM_PROMPT}],
             "messages": messages,
             "inferenceConfig": {
                 "maxTokens": 512,
