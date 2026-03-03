@@ -61,7 +61,7 @@ def get_weather_forecast(district: str, state: str) -> dict:
             max_temp = daily["temperature_2m_max"][i]
             min_temp = daily["temperature_2m_min"][i]
             rain_mm = daily["precipitation_sum"][i] or 0.0
-            condition = _wmo_condition(daily["weathercode"][i])
+            condition = _wmo_condition(daily["weathercode"][i] or 0)
 
             forecast.append({
                 "date": date,
@@ -73,9 +73,9 @@ def get_weather_forecast(district: str, state: str) -> dict:
 
             if rain_mm > 50:
                 alerts.append(f"Heavy rain alert ({rain_mm}mm) on {date}")
-            if max_temp > 45:
+            if max_temp is not None and max_temp > 45:
                 alerts.append(f"Heatwave alert ({max_temp}°C) on {date}")
-            if min_temp < 4:
+            if min_temp is not None and min_temp < 4:
                 alerts.append(f"Frost alert ({min_temp}°C) on {date}")
 
         result = {"district": district, "state": state, "forecast": forecast, "alerts": alerts}
