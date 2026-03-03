@@ -107,9 +107,11 @@ class GramSaathiHandler(ReplyOnPause):
                 self.language_code = user.language
             logger.info("[PROFILE] Returning user %s — %s", phone, user.name)
 
-    async def _reply_fn(self, audio: tuple[int, np.ndarray], phone: str = "") -> AsyncGenerator:
+    async def _reply_fn(self, audio: tuple[int, np.ndarray], webrtc_id: str = "", phone: str = "") -> AsyncGenerator:
         """Called once per full utterance (after Silero VAD detects a pause).
 
+        FastRTC passes (audio, webrtc_id, *additional_inputs) — webrtc_id is the
+        connection ID string injected by FastRTC before the Gradio additional_inputs.
         phone is passed from the Gradio phone number text box via additional_inputs.
         """
         # Load profile from DB on first turn
