@@ -28,16 +28,22 @@ async def transcribe(
     """
     headers = {"api-subscription-key": settings.sarvam_api_key}
 
+    # In translate mode, omit language_code so Sarvam auto-detects the spoken language.
+    # When language_code is specified, Sarvam echoes it back verbatim (no detection).
+    # In transcribe mode (English-only), we always know the language so we send it.
+    form_data: dict = {
+        "model": "saaras:v3",
+        "with_timestamps": "false",
+        "mode": mode,
+    }
+    if mode == "transcribe":
+        form_data["language_code"] = language_code
+
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(
             ASR_URL,
             headers=headers,
-            data={
-                "model": "saaras:v3",
-                "language_code": language_code,
-                "with_timestamps": "false",
-                "mode": mode,
-            },
+            data=form_data,
             files={"file": ("audio.wav", io.BytesIO(audio_bytes), "audio/wav")},
         )
         resp.raise_for_status()

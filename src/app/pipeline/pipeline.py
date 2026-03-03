@@ -66,9 +66,13 @@ async def _translate_and_tts(
     """
     try:
         text = sentence if is_english else await from_english(sentence, detected_lang)
+        logger.info("[TTS] lang=%s text=%r", detected_lang, text[:80])
+        chunk_count = 0
         async for chunk in synthesize_streaming(text, detected_lang, sample_rate=sample_rate):
             arr = np.frombuffer(chunk, dtype=np.int16).copy()
             await q.put((sample_rate, arr))
+            chunk_count += 1
+        logger.info("[TTS] done — %d chunks for lang=%s", chunk_count, detected_lang)
     except Exception:
         logger.exception("_translate_and_tts error for: %r", sentence)
     finally:
@@ -177,6 +181,7 @@ async def process_turn_streaming(
     )
     transcript = asr_result["transcript"]
     detected_lang = asr_result["language_code"]
+    logger.info("[ASR] input_lang=%s detected_lang=%s transcript=%r", language_code, detected_lang, transcript)
 
     if not transcript.strip():
         await audio_queue.put(None)
