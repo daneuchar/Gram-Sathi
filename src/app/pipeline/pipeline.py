@@ -71,11 +71,14 @@ def _expand_numbers(text: str) -> str:
 
 
 _MARKDOWN_RE = re.compile(r'[*_`#~>]+')
+_MARKER_RE = re.compile(r'<<<[^>]*>>>')
 
 
 def _strip_markdown(text: str) -> str:
-    """Remove markdown symbols so TTS doesn't speak 'asterisk asterisk'."""
-    return _MARKDOWN_RE.sub('', text).strip()
+    """Remove markdown symbols and <<<...>>> control markers before TTS."""
+    text = _MARKER_RE.sub('', text)
+    text = _MARKDOWN_RE.sub('', text)
+    return text.strip()
 
 
 _SENTENCE_RE = re.compile(r'(?<=[.!?।])\s+')
