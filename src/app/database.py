@@ -1,6 +1,11 @@
+import logging
+
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app.config import settings
 from app.models.base import Base
+
+logger = logging.getLogger(__name__)
 
 engine = create_async_engine(settings.database_url, echo=settings.debug)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
@@ -23,12 +28,17 @@ async def get_or_create_user(phone: str) -> User:
     """Load user by phone, creating a minimal record if not found."""
     async with AsyncSessionLocal() as session:
         user = await session.get(User, phone)
-        if user is None:
+        if user is not None:
+            return user
+        try:
             user = User(phone=phone)
             session.add(user)
             await session.commit()
             await session.refresh(user)
-        return user
+            return user
+        except IntegrityError:
+            await session.rollback()
+            return await session.get(User, phone)
 
 
 async def update_user_profile(
@@ -43,6 +53,7 @@ async def update_user_profile(
     async with AsyncSessionLocal() as session:
         user = await session.get(User, phone)
         if user is None:
+            logger.warning("update_user_profile: phone %s not found, skipping update", phone)
             return
         if name is not None:
             user.name = name

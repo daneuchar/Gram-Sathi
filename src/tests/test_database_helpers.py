@@ -20,6 +20,7 @@ async def test_get_or_create_user_new():
     added = mock_session.add.call_args[0][0]
     assert added.phone == "+919876543210"
     assert added.name is None
+    mock_session.refresh.assert_called_once_with(added)
 
 
 @pytest.mark.asyncio
@@ -56,3 +57,17 @@ async def test_update_user_profile():
     assert existing.district == "Coimbatore"
     assert existing.language == "ta-IN"
     mock_session.commit.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_update_user_profile_not_found():
+    mock_session = AsyncMock()
+    mock_session.get.return_value = None  # user does not exist
+
+    with patch("app.database.AsyncSessionLocal") as mock_factory:
+        mock_factory.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_factory.return_value.__aexit__ = AsyncMock(return_value=False)
+        # Should complete without error
+        await update_user_profile("+919999999999", name="Ghost")
+
+    mock_session.commit.assert_not_called()
