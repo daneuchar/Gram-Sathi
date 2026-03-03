@@ -22,6 +22,8 @@ def test_weather_query_is_weather():
 def test_scheme_query_is_scheme():
     assert _classify_filler("Am I eligible for PM Kisan scheme?") == "scheme"
     assert _classify_filler("What government subsidies are available?") == "scheme"
+    assert _classify_filler("Is this yojana available for me?") == "scheme"
+    assert _classify_filler("Am I eligible for this?") == "scheme"
 
 
 def test_open_question_is_generic():
