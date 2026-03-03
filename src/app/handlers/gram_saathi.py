@@ -149,22 +149,25 @@ class GramSaathiHandler(ReplyOnPause):
         if self.is_onboarding and english_response:
             profile_data, english_response = extract_profile_marker(english_response)
             if profile_data:
+                # Prefer explicitly chosen language over ASR-detected language
+                profile_language = profile_data.get("language") or detected_lang
                 await update_user_profile(
                     self.phone,
                     name=profile_data.get("name"),
                     state=profile_data.get("state"),
                     district=profile_data.get("district"),
-                    language=detected_lang,
+                    language=profile_language,
                 )
                 self.farmer_profile = {
                     "phone": self.phone,
                     "name": profile_data.get("name"),
                     "state": profile_data.get("state"),
                     "district": profile_data.get("district"),
-                    "language": detected_lang,
+                    "language": profile_language,
                 }
+                self.language_code = profile_language
                 self.is_onboarding = False
-                logger.info("[ONBOARD] Profile saved for %s: %s", self.phone, profile_data)
+                logger.info("[ONBOARD] Profile saved for %s: %s (lang=%s)", self.phone, profile_data, profile_language)
 
         if transcript:
             self.conversation_history.append(
