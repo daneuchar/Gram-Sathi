@@ -1,5 +1,5 @@
 import pytest
-from app.pipeline.nova_client import ONBOARDING_PROMPT, extract_profile_marker
+from app.prompts import ONBOARDING_PROMPT, extract_profile_marker
 
 
 def test_onboarding_prompt_exists():

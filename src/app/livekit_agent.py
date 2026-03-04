@@ -8,7 +8,7 @@ from livekit.plugins import sarvam, silero
 
 from app.config import settings
 from app.database import get_or_create_user, update_user_profile
-from app.pipeline.nova_client import (
+from app.prompts import (
     ONBOARDING_PROMPT,
     SYSTEM_PROMPT,
     extract_profile_marker,
