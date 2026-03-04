@@ -16,7 +16,7 @@ def test_build_system_prompt_with_profile():
 
 def test_build_system_prompt_no_profile_returns_onboarding():
     from app.livekit_agent import build_system_prompt
-    from app.pipeline.nova_client import ONBOARDING_PROMPT
+    from app.prompts import ONBOARDING_PROMPT
 
     prompt = build_system_prompt(None)
     assert prompt == ONBOARDING_PROMPT
