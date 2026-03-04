@@ -35,12 +35,12 @@ Two processes run side by side:
 
 ## Custom Plugins
 
-### SarvamSTT (`src/app/plugins/sarvam_stt.py`)
-- Implements `livekit.agents.stt.STT`
-- Buffers LiveKit 16kHz PCM audio frames until end-of-turn signal
-- Encodes buffered frames as WAV, submits to Sarvam `saaras:v3`
-- Mode: `translate` for Indic languages (English transcript), `transcribe` for English
-- Language sourced from session userdata (farmer's stored preference)
+### STT — `livekit.plugins.sarvam.STT` (built-in, no custom code needed)
+- Sarvam ships a native LiveKit plugin (`livekit-agents[sarvam]`) with saaras:v3 streaming
+- Configure with `model="saaras:v3"`, `mode="translate"` for Indic, `mode="transcribe"` for English
+- Streams audio over WebSocket to Sarvam in real-time (PCM frames) — better latency than batch
+- For onboarding (unknown language): omit `language_code` for auto-detection
+- For returning farmers: set `language_code` from stored profile
 
 ### BedrockLLM (`src/app/plugins/bedrock_llm.py`)
 - Implements `livekit.agents.llm.LLM`
@@ -50,12 +50,12 @@ Two processes run side by side:
 - System prompt injected per-turn with farmer profile context
 - Temperature: 0.3, max tokens: 256
 
-### SarvamTTS (`src/app/plugins/sarvam_tts.py`)
-- Implements `livekit.agents.tts.TTS`
-- Wraps `bulbul:v3` streaming WebSocket
-- Pre-processes text: strip markdown → expand numbers → translate English→farmer's language
-- Language sourced from session userdata
-- Streams audio chunks back to LiveKit as they arrive
+### SarvamTTS (`src/app/plugins/sarvam_tts.py`) — custom thin wrapper
+- Still needed because: LLM outputs English → must translate to farmer's language before TTS,
+  and language is dynamic per-farmer (can't fix at construction time)
+- `before_tts_cb` hook: strip markdown → expand numbers → translate English→farmer's language
+- Calls `livekit.plugins.sarvam.TTS` internally with the correct `target_language_code`
+- Language sourced from session userdata at call time
 
 ## Agent Entrypoint & Session Management
 
@@ -112,9 +112,8 @@ System prompt: remove `<thinking>` stripping note, simplify to pure instruction 
 ### New
 - `src/app/livekit_agent.py` — agent entrypoint + worker
 - `src/app/plugins/__init__.py`
-- `src/app/plugins/sarvam_stt.py` — custom STT plugin
-- `src/app/plugins/bedrock_llm.py` — custom LLM plugin
-- `src/app/plugins/sarvam_tts.py` — custom TTS plugin
+- `src/app/plugins/bedrock_llm.py` — custom LLM plugin (Llama 3.3 70B via Bedrock)
+- `src/app/plugins/sarvam_tts.py` — thin TTS wrapper (translate + dynamic language)
 
 ### Modified
 - `src/app/main.py` — remove FastRTC, add LiveKit dispatch webhook
@@ -137,7 +136,8 @@ System prompt: remove `<thinking>` stripping note, simplify to pure instruction 
 ## Dependencies Added
 
 ```
-livekit-agents[silero,turn-detector]~=1.4
+livekit-agents[sarvam,silero,turn-detector]~=1.4
 ```
 
-Sarvam STT/TTS and Bedrock LLM are custom plugins — no additional LiveKit plugin packages needed for them.
+`livekit-agents[sarvam]` provides the built-in Sarvam STT plugin (streaming saaras:v3 + bulbul TTS).
+BedrockLLM is a custom plugin — uses existing `boto3` (already in deps).
