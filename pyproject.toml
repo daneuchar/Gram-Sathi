@@ -24,6 +24,8 @@ dependencies = [
     "pydub>=0.25.1",
     "num2words>=0.5.14",
     "fastrtc[vad]>=0.0.34",
+    "livekit-agents[sarvam,silero,turn-detector]~=1.4",
+    "livekit-api~=1.0",
 ]
 
 [project.optional-dependencies]

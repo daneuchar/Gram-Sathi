@@ -25,6 +25,14 @@ class Settings(BaseSettings):
     amazon_q_app_id: str = ""
     amazon_q_index_id: str = ""
 
+    # LiveKit
+    livekit_url: str = ""           # e.g. wss://my-app.livekit.cloud
+    livekit_api_key: str = ""
+    livekit_api_secret: str = ""
+
+    # Llama 3.3 70B on Bedrock
+    llama_model_id: str = "us.meta.llama3-3-70b-instruct-v1:0"
+
     # Database
     database_url: str = "postgresql+asyncpg://gramvaani:gramvaani@localhost:5432/gramvaani"
 
