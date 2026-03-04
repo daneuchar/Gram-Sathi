@@ -14,10 +14,40 @@ from app.pipeline.nova_client import (
     extract_profile_marker,
     extract_lang_marker,
 )
+from app.pipeline.sarvam_tts import get_filler_audio
 from app.plugins.bedrock_llm import BedrockLLM
 from app.plugins.translating_tts import TranslatingTTS
 
 logger = logging.getLogger(__name__)
+
+_MANDI_KW = {'price', 'rate', 'mandi', 'market', 'cost', 'tomato', 'onion',
+             'wheat', 'rice', 'potato', 'cotton', 'maize', 'soybean', 'groundnut'}
+_WEATHER_KW = {'weather', 'rain', 'rainfall', 'forecast', 'temperature',
+               'wind', 'storm', 'cloud', 'sunny', 'hot', 'cold', 'humid', 'monsoon'}
+_SCHEME_KW = {'scheme', 'subsidy', 'government', 'kisan', 'eligible',
+              'benefit', 'loan', 'insurance', 'fasal', 'yojana'}
+_QUESTION_WORDS = {'what', 'when', 'where', 'who', 'why', 'how', 'which',
+                   'is', 'are', 'will', 'can', 'do', 'does'}
+
+
+async def _async_iter_once(frame):
+    """Yield a single audio frame as an async iterable."""
+    yield frame
+
+
+def classify_filler_for_transcript(transcript: str) -> str:
+    """Classify a transcript into a filler category for context-aware audio."""
+    words = transcript.lower().split()
+    word_set = set(words)
+    if word_set & _MANDI_KW:
+        return 'mandi'
+    if word_set & _WEATHER_KW:
+        return 'weather'
+    if word_set & _SCHEME_KW:
+        return 'scheme'
+    if len(words) <= 4 and '?' not in transcript and not (word_set & _QUESTION_WORDS):
+        return 'none'
+    return 'generic'
 
 
 def build_system_prompt(profile: dict | None) -> str:
@@ -68,6 +98,24 @@ async def entrypoint(ctx: JobContext) -> None:
     )
 
     session = AgentSession()
+
+    # Play context-aware filler audio while LLM warms up
+    @session.on("user_input_transcribed")
+    async def on_user_transcribed(event):
+        if not event.is_final:
+            return
+        category = classify_filler_for_transcript(event.transcript)
+        lang = translating_tts.language
+        filler = get_filler_audio(lang, category, sample_rate=8000)
+        if filler:
+            import livekit.rtc as rtc
+            frame = rtc.AudioFrame(
+                data=filler,
+                sample_rate=8000,
+                num_channels=1,
+                samples_per_channel=len(filler) // 2,  # 16-bit PCM
+            )
+            session.say(text="", audio=_async_iter_once(frame), allow_interruptions=True, add_to_chat_ctx=False)
 
     # Handle PROFILE marker from onboarding — save to DB and update session
     @session.on("conversation_item_added")

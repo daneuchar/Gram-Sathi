@@ -38,3 +38,23 @@ async def test_translating_tts_calls_prepare_and_delegates():
 
     mock_prep.assert_called_once_with("Wheat price is twelve hundred rupees", "hi-IN")
     mock_inner_tts.synthesize.assert_called_once_with("गेहूं की कीमत बारह सौ रुपये है")
+
+
+def test_classify_filler_mandi():
+    from app.livekit_agent import classify_filler_for_transcript
+    assert classify_filler_for_transcript("what is the wheat price in mandi") == "mandi"
+
+
+def test_classify_filler_weather():
+    from app.livekit_agent import classify_filler_for_transcript
+    assert classify_filler_for_transcript("will it rain tomorrow") == "weather"
+
+
+def test_classify_filler_generic():
+    from app.livekit_agent import classify_filler_for_transcript
+    assert classify_filler_for_transcript("tell me something about farming") == "generic"
+
+
+def test_classify_filler_none_for_short():
+    from app.livekit_agent import classify_filler_for_transcript
+    assert classify_filler_for_transcript("ok") == "none"
