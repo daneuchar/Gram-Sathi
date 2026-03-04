@@ -10,3 +10,4 @@ dist/
 build/
 .uv/
 uv.lock
+.worktrees/
