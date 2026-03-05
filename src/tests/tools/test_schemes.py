@@ -65,5 +65,13 @@ class TestCheckSchemeEligibility:
         result = check_scheme_eligibility({"state": "Telangana"})
         for scheme in result["schemes"]:
             assert "name" in scheme
+            assert "type" in scheme
             assert "benefits" in scheme
             assert "how_to_apply" in scheme
+            assert "documents" in scheme
+
+    def test_crop_filter_excludes_non_matching(self):
+        # Kerala coconut insurance should not appear for rice farmers
+        result = check_scheme_eligibility({"state": "Kerala", "crop": "rice"})
+        names = [s["name"] for s in result["schemes"]]
+        assert not any("coconut" in n.lower() for n in names)
