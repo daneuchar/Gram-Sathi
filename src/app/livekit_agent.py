@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import re
 from collections.abc import AsyncIterable
@@ -141,13 +142,33 @@ class GramSaathiAgent(Agent):
         return Agent.default.tts_node(self, _strip_markers(text, self._stt_plugin, self._tts_plugin), model_settings)
 
 
+def _is_tool_call_json(text: str) -> bool:
+    """Detect if text is a tool call JSON that LiveKit sends through the TTS pipeline."""
+    stripped = text.strip()
+    if not stripped.startswith("{"):
+        return False
+    try:
+        parsed = json.loads(stripped)
+        if isinstance(parsed, dict) and ("name" in parsed or "function" in parsed):
+            return True
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+    return False
+
+
 async def _strip_markers(
     text: AsyncIterable[str], stt_plugin: sarvam.STT, tts_plugin: sarvam.TTS
 ) -> AsyncIterable[str]:
-    """Strip <<<...>>> markers and <thinking>...</thinking> blocks from LLM output stream."""
+    """Strip <<<...>>> markers, <thinking> blocks, and tool call JSON from LLM output stream."""
     buf = ""
     async for chunk in text:
         buf += chunk
+
+        # Skip tool call JSON entirely — LiveKit sends FunctionToolCall as text through TTS
+        if _is_tool_call_json(buf):
+            logger.info("[tts_node] stripping tool call JSON: %s", buf[:120])
+            buf = ""
+            continue
 
         # Strip complete <thinking>...</thinking> blocks
         while "<thinking>" in buf and "</thinking>" in buf:
@@ -183,13 +204,20 @@ async def _strip_markers(
                 hold_idx = min(hold_idx, idx)
 
         if hold_idx > 0:
-            yield buf[:hold_idx]
+            to_speak = buf[:hold_idx]
+            logger.info("[tts_node] yielding to TTS: %s", to_speak[:150])
+            yield to_speak
         buf = buf[hold_idx:]
 
     # Final cleanup of any remaining markers/thinking in buffer
     buf = _THINKING_RE.sub("", buf)
     buf = _MARKER_RE.sub("", buf).strip()
+    # Final check for tool call JSON in remaining buffer
+    if buf and _is_tool_call_json(buf):
+        logger.info("[tts_node] stripping final tool call JSON: %s", buf[:120])
+        buf = ""
     if buf:
+        logger.info("[tts_node] yielding final to TTS: %s", buf[:150])
         yield buf
 
 
