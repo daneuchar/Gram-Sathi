@@ -201,7 +201,7 @@ class _BedrockLLMStream(llm.LLMStream):
         else:
             text = " ".join(p["text"] for p in parts if "text" in p)
             text = _strip_thinking(text)
-            logger.info("[bedrock] response text (%d chars): %s", len(text), text[:200])
+            logger.debug("[bedrock] response text (%d chars): %s", len(text), text[:200])
             if text:
                 self._event_ch.send_nowait(
                     ChatChunk(
