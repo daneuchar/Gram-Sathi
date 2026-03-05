@@ -7,16 +7,24 @@ NOVA_TOOLS = [
     {
         "toolSpec": {
             "name": "get_mandi_prices",
-            "description": "Get current mandi (agricultural market) prices for a commodity in a given state and district.",
+            "description": (
+                "Get current mandi (agricultural market) prices for a commodity in India. "
+                "The farmer can ask about ANY state — not just their home state. "
+                "For example, a Tamil Nadu farmer can ask about tomato prices in Telangana or Maharashtra. "
+                "Use whatever state the farmer mentions. Only default to the farmer's profile state if they don't specify one. "
+                "District is optional — if the exact district name is unknown or not found, omit it and state-level results will be returned. "
+                "Note: city names like Chennai, Mumbai, Hyderabad may not match API district names — "
+                "use the administrative district name (e.g. Thiruvellore for Chennai area) or omit district."
+            ),
             "inputSchema": {
                 "json": {
                     "type": "object",
                     "properties": {
                         "commodity": {"type": "string", "description": "Crop or commodity name, e.g. Wheat, Rice, Tomato"},
-                        "state": {"type": "string", "description": "Indian state name, e.g. Madhya Pradesh"},
-                        "district": {"type": "string", "description": "District name, e.g. Sehore"},
+                        "state": {"type": "string", "description": "Indian state name, e.g. Tamil Nadu"},
+                        "district": {"type": "string", "description": "Revenue district name (optional). Omit if unknown."},
                     },
-                    "required": ["commodity", "state", "district"],
+                    "required": ["commodity", "state"],
                 }
             },
         }
@@ -74,7 +82,7 @@ NOVA_TOOLS = [
 ]
 
 _TOOL_DISPATCH = {
-    "get_mandi_prices": lambda inp: get_mandi_prices(inp["commodity"], inp["state"], inp["district"]),
+    "get_mandi_prices": lambda inp: get_mandi_prices(inp["commodity"], inp["state"], inp.get("district")),
     "get_weather_forecast": lambda inp: get_weather_forecast(inp["district"], inp["state"]),
     "check_scheme_eligibility": lambda inp: check_scheme_eligibility(inp),
     "get_crop_advisory": lambda inp: get_crop_advisory(inp["crop"], inp["state"]),

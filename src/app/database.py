@@ -16,6 +16,14 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
 
 
+async def reset_db():
+    """Drop all tables and recreate them. Use for local dev to start fresh."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database reset complete — all tables dropped and recreated.")
+
+
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session

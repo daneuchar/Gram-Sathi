@@ -40,9 +40,9 @@ def test_get_weather_forecast_success():
          patch("httpx.get", side_effect=[geocode_resp, forecast_resp]):
         result = get_weather_forecast("Chennai", "Tamil Nadu")
 
-    assert "forecast" in result
-    assert result["forecast"][0]["max_temp"] == 33.0
-    assert result["forecast"][0]["condition"] == "Mainly clear"
+    assert "next_2_days" in result
+    assert result["next_2_days"][0]["max_temp_c"] == 33.0
+    assert result["next_2_days"][0]["condition"] == "Mainly clear"
     assert result["alerts"] == []
 
 

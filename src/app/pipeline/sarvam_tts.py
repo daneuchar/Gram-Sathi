@@ -84,6 +84,27 @@ SPEAKER_MAP_V2 = {
 }
 
 
+_WELCOME_TEXT = "Welcome to Gram Saathi! What language do you prefer to speak in?"
+_WELCOME_PCM: bytes | None = None
+
+
+async def get_welcome_audio(sample_rate: int = 8000) -> bytes:
+    """Return cached English welcome audio as raw PCM int16 bytes.
+
+    Generated once on first call via Sarvam streaming TTS so there is zero
+    latency when the audio is actually needed (connection handler just awaits
+    the cached result on every subsequent call).
+    """
+    global _WELCOME_PCM
+    if _WELCOME_PCM is None:
+        chunks: list[bytes] = []
+        async for chunk in synthesize_streaming(_WELCOME_TEXT, "en-IN", sample_rate=sample_rate):
+            chunks.append(chunk)
+        _WELCOME_PCM = b"".join(chunks)
+        logger.info("Welcome audio pre-generated (%d bytes)", len(_WELCOME_PCM))
+    return _WELCOME_PCM
+
+
 async def synthesize(text: str, language_code: str, sample_rate: int = 8000) -> bytes:
     """REST TTS using bulbul:v3 — highest quality, used for filler phrases.
     Returns full audio bytes (no streaming). sample_rate=8000 for Exotel phone calls.
