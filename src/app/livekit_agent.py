@@ -145,11 +145,13 @@ class GramSaathiAgent(Agent):
 def _is_tool_call_json(text: str) -> bool:
     """Detect if text is a tool call JSON that LiveKit sends through the TTS pipeline."""
     stripped = text.strip()
-    if not stripped.startswith("{"):
+    if not stripped.startswith("{") or not stripped.endswith("}"):
         return False
     try:
         parsed = json.loads(stripped)
-        if isinstance(parsed, dict) and ("name" in parsed or "function" in parsed):
+        if isinstance(parsed, dict) and "name" in parsed and (
+            "call_id" in parsed or "arguments" in parsed or "parameters" in parsed
+        ):
             return True
     except (json.JSONDecodeError, ValueError, TypeError):
         pass
@@ -166,7 +168,7 @@ async def _strip_markers(
 
         # Skip tool call JSON entirely — LiveKit sends FunctionToolCall as text through TTS
         if _is_tool_call_json(buf):
-            logger.info("[tts_node] stripping tool call JSON: %s", buf[:120])
+            logger.debug("[tts_node] stripping tool call JSON: %s", buf[:120])
             buf = ""
             continue
 
@@ -205,7 +207,7 @@ async def _strip_markers(
 
         if hold_idx > 0:
             to_speak = buf[:hold_idx]
-            logger.info("[tts_node] yielding to TTS: %s", to_speak[:150])
+            logger.debug("[tts_node] yielding to TTS: %s", to_speak[:150])
             yield to_speak
         buf = buf[hold_idx:]
 
@@ -214,10 +216,10 @@ async def _strip_markers(
     buf = _MARKER_RE.sub("", buf).strip()
     # Final check for tool call JSON in remaining buffer
     if buf and _is_tool_call_json(buf):
-        logger.info("[tts_node] stripping final tool call JSON: %s", buf[:120])
+        logger.debug("[tts_node] stripping final tool call JSON: %s", buf[:120])
         buf = ""
     if buf:
-        logger.info("[tts_node] yielding final to TTS: %s", buf[:150])
+        logger.debug("[tts_node] yielding final to TTS: %s", buf[:150])
         yield buf
 
 
