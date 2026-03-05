@@ -1,19 +1,4 @@
-version: "3.9"
-
 services:
-  backend:
-    build: .
-    ports:
-      - "8000:8000"
-    env_file: .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - ./src:/app/src
-    environment:
-      - PYTHONPATH=/app/src
-
   postgres:
     image: postgres:15-alpine
     environment:
@@ -22,22 +7,67 @@ services:
       POSTGRES_DB: gramvaani
     ports:
       - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gramvaani"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile.dashboard
+  livekit:
+    image: livekit/livekit-server
     ports:
-      - "8501:8501"
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    command: --dev --node-ip 0.0.0.0
+
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
     env_file: .env
+    environment:
+      - PYTHONPATH=/app/src
+      - DATABASE_URL=postgresql+asyncpg://gramvaani:gramvaani@postgres:5432/gramvaani
+      - LIVEKIT_URL=ws://livekit:7880
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      livekit:
+        condition: service_started
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  agent:
+    build: .
+    env_file: .env
+    environment:
+      - PYTHONPATH=/app/src
+      - DATABASE_URL=postgresql+asyncpg://gramvaani:gramvaani@postgres:5432/gramvaani
+      - LIVEKIT_URL=ws://livekit:7880
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      livekit:
+        condition: service_started
+    command: uv run python -m app.livekit_agent dev
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${PUBLIC_URL:-http://localhost:8000}
+        - NEXT_PUBLIC_LIVEKIT_URL=${LIVEKIT_PUBLIC_URL:-ws://localhost:7880}
+    ports:
+      - "3000:3000"
     depends_on:
       - backend
 
-# NOTE: Redis intentionally omitted for prototype.
-# Using cachetools in-memory TTL cache (src/app/cache.py).
-# Production: add redis service + swap cache.py for async Redis client.
+volumes:
+  pgdata:
