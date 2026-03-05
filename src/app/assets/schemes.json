@@ -1,0 +1,677 @@
+[
+  {
+    "id": "pm-kisan",
+    "name": "PM-KISAN Samman Nidhi",
+    "type": "central",
+    "states": ["all"],
+    "description": "Direct income support of Rs 6000 per year to farmer families in 3 installments under the Pradhan Mantri Kisan Samman Nidhi scheme launched in 2019",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 6000 per year in 3 equal installments of Rs 2000 each, directly to bank account via DBT",
+    "how_to_apply": "Register at pmkisan.gov.in or visit nearest CSC center with Aadhaar and bank details",
+    "documents": ["Aadhaar card", "Bank account passbook", "Land ownership records"]
+  },
+  {
+    "id": "pmfby",
+    "name": "Pradhan Mantri Fasal Bima Yojana",
+    "type": "central",
+    "states": ["all"],
+    "description": "Comprehensive crop insurance scheme providing financial support to farmers suffering crop loss or damage due to natural calamities, pests, and diseases",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Crop insurance at premium of 2% for Kharif crops, 1.5% for Rabi crops, and 5% for commercial/horticulture crops with full sum insured coverage",
+    "how_to_apply": "Apply through nearest bank branch, CSC center, or the PMFBY portal at pmfby.gov.in before the seasonal deadline",
+    "documents": ["Aadhaar card", "Bank account details", "Land records/tenancy agreement", "Sowing certificate from agriculture officer"]
+  },
+  {
+    "id": "kcc",
+    "name": "Kisan Credit Card",
+    "type": "central",
+    "states": ["all"],
+    "description": "Provides farmers with affordable short-term credit for cultivation, post-harvest expenses, and allied agricultural activities through a flexible credit card mechanism",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Crop loans at 4% effective interest rate (7% with 3% interest subvention for timely repayment), credit limit based on land holding and cropping pattern",
+    "how_to_apply": "Apply at any scheduled commercial bank, cooperative bank, or regional rural bank branch with land records",
+    "documents": ["Aadhaar card", "Land ownership documents", "Passport-size photograph", "Bank account details"]
+  },
+  {
+    "id": "soil-health-card",
+    "name": "Soil Health Card Scheme",
+    "type": "central",
+    "states": ["all"],
+    "description": "Provides soil health cards to farmers with crop-wise nutrient recommendations to improve soil fertility and productivity through balanced use of fertilizers",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Free soil testing and issuance of Soil Health Card every 2 years with recommendations on dosage of fertilizers and soil amendments",
+    "how_to_apply": "Contact nearest agriculture department office or Krishi Vigyan Kendra, or register at soilhealth.dac.gov.in",
+    "documents": ["Aadhaar card", "Land ownership records", "Details of crops grown"]
+  },
+  {
+    "id": "pmksy",
+    "name": "Pradhan Mantri Krishi Sinchai Yojana",
+    "type": "central",
+    "states": ["all"],
+    "description": "Ensures access to protective irrigation for every farm (Har Khet Ko Paani) and improves water use efficiency through micro-irrigation and watershed development",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Up to 55% subsidy on micro-irrigation systems (drip and sprinkler), additional top-up by state governments bringing total subsidy up to 80-90% for small/marginal farmers",
+    "how_to_apply": "Apply through state agriculture or horticulture department, or register at pmksy.gov.in",
+    "documents": ["Aadhaar card", "Land ownership records", "Bank account details", "Quotation from empaneled supplier"]
+  },
+  {
+    "id": "pkvy",
+    "name": "Paramparagat Krishi Vikas Yojana",
+    "type": "central",
+    "states": ["all"],
+    "description": "Promotes organic farming through cluster-based approach, supporting farmers in adoption of organic practices including certification and marketing",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Rs 50000 per hectare over 3 years for organic inputs, seeds, harvesting, and transportation to market. Includes PGS-India organic certification",
+    "how_to_apply": "Form a cluster of 50 or more farmers through local agriculture department and apply through the Regional Centre of Organic Farming",
+    "documents": ["Aadhaar card", "Land ownership records", "Cluster formation documents", "Bank account details"]
+  },
+  {
+    "id": "enam",
+    "name": "e-NAM (National Agriculture Market)",
+    "type": "central",
+    "states": ["all"],
+    "description": "Online trading platform connecting APMCs across the country to create a unified national market for agricultural commodities, enabling transparent price discovery",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Access to transparent online trading across mandis nationwide, real-time price information, direct payment to bank account, reduced intermediary costs",
+    "how_to_apply": "Register at enam.gov.in using Aadhaar and bank details, or visit nearest e-NAM enabled APMC mandi",
+    "documents": ["Aadhaar card", "Bank account details", "Mobile number", "Mandi licence (if applicable)"]
+  },
+  {
+    "id": "nfsm",
+    "name": "National Food Security Mission",
+    "type": "central",
+    "states": ["all"],
+    "description": "Aims to increase production and productivity of rice, wheat, pulses, coarse cereals, and commercial crops through area expansion and technology demonstrations",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Subsidized certified seeds, integrated nutrient management inputs, resource conservation machinery, and crop demonstrations for rice, wheat, and pulses",
+    "how_to_apply": "Contact District Agriculture Officer or block-level agriculture office for registration under NFSM components",
+    "documents": ["Aadhaar card", "Land ownership records", "Bank account details"]
+  },
+  {
+    "id": "rkvy",
+    "name": "Rashtriya Krishi Vikas Yojana",
+    "type": "central",
+    "states": ["all"],
+    "description": "Incentivizes states to enhance public investment in agriculture by providing flexible funding for agriculture and allied sector development projects",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Infrastructure grants for agri-startups, post-harvest management, cold chain development, and value addition projects with up to 50% subsidy",
+    "how_to_apply": "Apply through state agriculture department or submit proposals through RKVY-RAFTAAR portal for agri-entrepreneurship",
+    "documents": ["Aadhaar card", "Project proposal", "Land ownership records", "Bank account details"]
+  },
+  {
+    "id": "smam",
+    "name": "Sub-Mission on Agricultural Mechanization",
+    "type": "central",
+    "states": ["all"],
+    "description": "Promotes farm mechanization by providing subsidies on purchase of agricultural machinery and equipment, with custom hiring centers for small farmers",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "50-80% subsidy on purchase of agricultural machinery and equipment including tractors, harvesters, tillers, and implements for small and marginal farmers",
+    "how_to_apply": "Apply online at agrimachinery.nic.in or through District Agriculture Officer with required documents",
+    "documents": ["Aadhaar card", "Land ownership records", "Bank account details", "Quotation from authorized dealer", "Category certificate (SC/ST/OBC if applicable)"]
+  },
+  {
+    "id": "pm-kisan-maandhan",
+    "name": "PM Kisan Maandhan Yojana",
+    "type": "central",
+    "states": ["all"],
+    "description": "Voluntary and contributory pension scheme for small and marginal farmers to provide social security in old age with monthly pension after attaining 60 years",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Guaranteed monthly pension of Rs 3000 after attaining age of 60 years, with equal contribution from government to pension fund",
+    "how_to_apply": "Register at nearest CSC center or visit pmkmy.gov.in with Aadhaar and bank details. Monthly contribution ranges from Rs 55 to Rs 200 based on age",
+    "documents": ["Aadhaar card", "Bank account details with IFSC code", "Land ownership records", "Age proof"]
+  },
+  {
+    "id": "aif",
+    "name": "Agriculture Infrastructure Fund",
+    "type": "central",
+    "states": ["all"],
+    "description": "Provides medium to long-term financing for investment in post-harvest management and community farming assets through interest subvention and credit guarantee",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "3% per annum interest subvention on loans up to Rs 2 crore for post-harvest infrastructure like warehouses, cold storage, and processing units with CGTMSE credit guarantee",
+    "how_to_apply": "Apply through any scheduled bank or through the Agriculture Infrastructure Fund portal at agriinfra.dac.gov.in",
+    "documents": ["Aadhaar card", "Project report", "Land ownership or lease documents", "Bank account details", "GST registration (if applicable)"]
+  },
+  {
+    "id": "micro-irrigation-fund",
+    "name": "Micro Irrigation Fund",
+    "type": "central",
+    "states": ["all"],
+    "description": "Dedicated fund operated through NABARD to support state-level implementation of micro-irrigation projects covering drip and sprinkler irrigation systems",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "State-level funding support for expansion of drip and sprinkler irrigation systems, innovative micro-irrigation technologies, and extension activities",
+    "how_to_apply": "Apply through state agriculture or horticulture department micro-irrigation program under PMKSY-Per Drop More Crop",
+    "documents": ["Aadhaar card", "Land ownership records", "Bank account details", "Quotation from empaneled supplier"]
+  },
+  {
+    "id": "nbhm",
+    "name": "National Beekeeping and Honey Mission",
+    "type": "central",
+    "states": ["all"],
+    "description": "Promotes scientific beekeeping for income generation, crop pollination, and production of quality honey and other bee products across the country",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Subsidy on bee colonies, beekeeping equipment, honey processing units, and training programs. Up to Rs 14000 per bee colony set with equipment",
+    "how_to_apply": "Contact National Bee Board, state agriculture/horticulture department, or Khadi and Village Industries Commission for subsidy application",
+    "documents": ["Aadhaar card", "Land ownership records", "Bank account details", "Training certificate (if available)"]
+  },
+  {
+    "id": "nmsa",
+    "name": "National Mission on Sustainable Agriculture",
+    "type": "central",
+    "states": ["all"],
+    "description": "Promotes climate-resilient agricultural practices through soil health management, water use efficiency, and adoption of climate-smart farming technologies",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Support for rainfed area development, soil health management, climate change adaptation in agriculture, and resource conservation technology demonstrations",
+    "how_to_apply": "Contact District Agriculture Officer or state agriculture department for registration under NMSA components and sub-missions",
+    "documents": ["Aadhaar card", "Land ownership records", "Bank account details"]
+  },
+  {
+    "id": "rythu-bandhu",
+    "name": "Rythu Bandhu Investment Support Scheme",
+    "type": "state",
+    "states": ["Telangana"],
+    "description": "Telangana government's flagship farmer investment support scheme providing direct financial assistance to all land-owning farmers for agricultural investment",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 10000 per acre per year paid in two installments of Rs 5000 each during Vanakalam (Kharif) and Yasangi (Rabi) seasons directly to bank account",
+    "how_to_apply": "Register at nearest Mee-Seva center or agriculture office with pattadar passbook. Amount credited automatically for registered farmers",
+    "documents": ["Aadhaar card", "Pattadar passbook", "Bank account details", "Aadhaar-linked mobile number"]
+  },
+  {
+    "id": "rythu-bima",
+    "name": "Rythu Bima (Farmer Life Insurance)",
+    "type": "state",
+    "states": ["Telangana"],
+    "description": "Free life insurance scheme for farmers in Telangana providing Rs 5 lakh coverage in case of death due to any cause including natural death",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 5 lakh life insurance coverage for farmers aged 18-59 years, premium fully paid by government, claim amount directly paid to nominee",
+    "how_to_apply": "Automatically enrolled for Rythu Bandhu beneficiaries. Nominee details updated through agriculture department or Mee-Seva center",
+    "documents": ["Aadhaar card", "Pattadar passbook", "Nominee Aadhaar card", "Bank account details of nominee"]
+  },
+  {
+    "id": "ysr-rythu-bharosa",
+    "name": "YSR Rythu Bharosa - PM KISAN",
+    "type": "state",
+    "states": ["Andhra Pradesh"],
+    "description": "Andhra Pradesh government combines state investment support with PM-KISAN to provide Rs 13500 per year to all farmer families for agricultural investment",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 13500 per year total — Rs 7500 state component (paid in Kharif season) plus Rs 6000 from PM-KISAN, directly credited to bank account",
+    "how_to_apply": "Register at nearest RBK (Rythu Bharosa Kendra) or village secretariat with land documents and Aadhaar",
+    "documents": ["Aadhaar card", "Land ownership records (1B/adangal)", "Bank account passbook", "Aadhaar-linked mobile number"]
+  },
+  {
+    "id": "ysr-free-crop-insurance",
+    "name": "YSR Free Crop Insurance",
+    "type": "state",
+    "states": ["Andhra Pradesh"],
+    "description": "Andhra Pradesh government pays the full farmer share of crop insurance premium under PMFBY, making crop insurance completely free for farmers in the state",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Free crop insurance with zero premium for farmers — state government pays farmer share of premium under PMFBY for all notified crops",
+    "how_to_apply": "Apply through nearest RBK (Rythu Bharosa Kendra) or bank branch during enrollment window before crop season",
+    "documents": ["Aadhaar card", "Land records", "Bank account details", "Sowing certificate"]
+  },
+  {
+    "id": "tn-free-borewell",
+    "name": "Tamil Nadu Free Borewell Scheme",
+    "type": "state",
+    "states": ["Tamil Nadu"],
+    "description": "Tamil Nadu state government provides free borewell drilling to small and marginal farmers for irrigation purpose to improve agricultural productivity",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Free borewell drilling up to 200 feet depth with casing pipes and motor pump set, fully funded by state government for eligible farmers",
+    "how_to_apply": "Apply at District Agriculture Office or through the Tamil Nadu Agriculture Department's online portal with land documents",
+    "documents": ["Aadhaar card", "Land ownership records (patta/chitta/adangal)", "Bank account details", "Small/marginal farmer certificate"]
+  },
+  {
+    "id": "tn-crop-insurance",
+    "name": "Tamil Nadu Crop Insurance Scheme",
+    "type": "state",
+    "states": ["Tamil Nadu"],
+    "description": "State crop insurance scheme operated alongside PMFBY to provide additional crop loss compensation to farmers in Tamil Nadu for notified crops and areas",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Subsidized crop insurance premium with state top-up compensation beyond PMFBY coverage for crop losses due to drought, flood, and pest attacks",
+    "how_to_apply": "Enroll at nearest cooperative bank, commercial bank branch, or through common service center during the enrollment period",
+    "documents": ["Aadhaar card", "Land records (patta/chitta)", "Bank account details", "Sowing certificate from Village Administrative Officer"]
+  },
+  {
+    "id": "raitha-siri",
+    "name": "Raitha Siri (Organic Farming Scheme)",
+    "type": "state",
+    "states": ["Karnataka"],
+    "description": "Karnataka government scheme promoting organic farming among small and marginal farmers through financial assistance for bio-inputs and organic certification",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Financial assistance of Rs 6500 per acre for adoption of organic farming practices, free bio-inputs, vermicompost units, and training on organic cultivation",
+    "how_to_apply": "Apply through Raitha Samparka Kendra (farmer contact center) or district agriculture department office in Karnataka",
+    "documents": ["Aadhaar card", "RTC (Record of Rights, Tenancy and Crops)", "Bank account details", "Passport-size photographs"]
+  },
+  {
+    "id": "krishi-bhagya",
+    "name": "Krishi Bhagya Scheme",
+    "type": "state",
+    "states": ["Karnataka"],
+    "description": "Karnataka scheme to help farmers in dry and rain-dependent areas by creating farm ponds, polyethylene lining, and providing diesel pump sets for protective irrigation",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "80% subsidy on construction of farm ponds with polyethylene lining, diesel pump sets, sprinkler/drip irrigation sets for rainfed area farmers",
+    "how_to_apply": "Apply through Raitha Samparka Kendra or district agriculture department. Scheme implemented through Department of Agriculture, Karnataka",
+    "documents": ["Aadhaar card", "RTC (Record of Rights)", "Bank account details", "Land map/sketch"]
+  },
+  {
+    "id": "namo-shetkari",
+    "name": "Namo Shetkari Mahasanman Nidhi",
+    "type": "state",
+    "states": ["Maharashtra"],
+    "description": "Maharashtra government's farmer welfare scheme providing Rs 6000 per year as state top-up in addition to PM-KISAN benefits for farmer families in the state",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 6000 per year state top-up paid in 3 installments of Rs 2000 each, in addition to Rs 6000 from PM-KISAN, total Rs 12000 per year",
+    "how_to_apply": "Register through existing PM-KISAN portal. Eligible PM-KISAN beneficiaries in Maharashtra automatically enrolled",
+    "documents": ["Aadhaar card", "7/12 utara (land record)", "8A extract", "Bank account details"]
+  },
+  {
+    "id": "maharashtra-crop-insurance",
+    "name": "Maharashtra State Crop Insurance Scheme",
+    "type": "state",
+    "states": ["Maharashtra"],
+    "description": "State crop insurance scheme complementing PMFBY with additional coverage and reduced premium burden for Maharashtra farmers for notified crops",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Subsidized crop insurance with Re 1 premium for farmers. State bears the remaining premium cost. Coverage for drought, flood, pest, and disease damage",
+    "how_to_apply": "Enroll through nearest bank branch, CSC center, or through the Maharashtra agriculture department portal during season enrollment window",
+    "documents": ["Aadhaar card", "7/12 utara", "Bank account details", "Sowing certificate"]
+  },
+  {
+    "id": "cm-kisan-kalyan",
+    "name": "Mukhya Mantri Kisan Kalyan Yojana",
+    "type": "state",
+    "states": ["Madhya Pradesh"],
+    "description": "Madhya Pradesh scheme providing Rs 4000 per year as state supplement to PM-KISAN beneficiaries for direct income support to farmer families",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 4000 per year in 2 installments of Rs 2000 each, in addition to PM-KISAN benefits, directly credited to bank account via DBT",
+    "how_to_apply": "Eligible PM-KISAN beneficiaries in Madhya Pradesh are automatically enrolled. New farmers register through district agriculture office",
+    "documents": ["Aadhaar card", "Khasra/B-1 (land ownership records)", "Bank account details", "Samagra ID"]
+  },
+  {
+    "id": "mp-bhavantar",
+    "name": "Bhavantar Bhugtan Yojana (MP)",
+    "type": "state",
+    "states": ["Madhya Pradesh"],
+    "description": "Madhya Pradesh price deficiency payment scheme that compensates farmers when market prices fall below the Minimum Support Price for notified crops",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Difference between MSP (or modal price) and actual selling price paid directly to farmer's bank account for registered produce sold in mandis",
+    "how_to_apply": "Register on e-Uparjan portal (mpeuparjan.nic.in) before the selling season. Sell produce at registered mandi and claim price difference",
+    "documents": ["Aadhaar card", "Land ownership records (Khasra/B-1)", "Bank account details", "Mandi receipt/sale slip"]
+  },
+  {
+    "id": "up-kisan-samman",
+    "name": "UP Kisan Samman Nidhi (State Top-up)",
+    "type": "state",
+    "states": ["Uttar Pradesh"],
+    "description": "Uttar Pradesh supplementary farmer income support providing additional direct benefit transfer to complement PM-KISAN benefits for state farmers",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Additional state income support to PM-KISAN beneficiaries, assistance with crop procurement at MSP, and subsidized agricultural inputs",
+    "how_to_apply": "Register through district agriculture office or PM-KISAN portal. Existing PM-KISAN beneficiaries receive state benefits automatically",
+    "documents": ["Aadhaar card", "Khatauni (land record)", "Bank account details", "Ration card"]
+  },
+  {
+    "id": "up-free-borewell",
+    "name": "UP Free Borewell/Nalkoop Yojana",
+    "type": "state",
+    "states": ["Uttar Pradesh"],
+    "description": "Uttar Pradesh government scheme to provide free borewells to small and marginal farmers in identified blocks for irrigation development",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Free borewell drilling and installation with pump set for irrigation, fully funded by state government for small and marginal farmers",
+    "how_to_apply": "Apply through Block Development Office or district agriculture/minor irrigation department with land documents",
+    "documents": ["Aadhaar card", "Khatauni (land record)", "Bank account details", "Category certificate", "Passport-size photograph"]
+  },
+  {
+    "id": "punjab-crop-diversification",
+    "name": "Punjab Crop Diversification Programme",
+    "type": "state",
+    "states": ["Punjab"],
+    "description": "Punjab government incentivizes farmers to shift from paddy monoculture to less water-intensive crops like maize, cotton, pulses, and oilseeds",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 12000 per acre incentive for diversifying from paddy to alternative crops, free seeds, technical guidance, and assured procurement support",
+    "how_to_apply": "Register at block agriculture office or through Punjab Mandi Board portal before Kharif season sowing",
+    "documents": ["Aadhaar card", "Jamabandi (land record)", "Bank account details", "Previous crop details"]
+  },
+  {
+    "id": "punjab-tubewell-subsidy",
+    "name": "Punjab Tubewell Subsidy Scheme",
+    "type": "state",
+    "states": ["Punjab"],
+    "description": "Punjab government provides subsidized tubewells and submersible pump sets to small and marginal farmers for assured irrigation facilities",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Up to 80% subsidy on installation of tubewell and submersible pump set for small and marginal farmers in identified blocks",
+    "how_to_apply": "Apply through district agriculture department or block agriculture officer's office with required documents",
+    "documents": ["Aadhaar card", "Jamabandi (land record)", "Bank account details", "Small/marginal farmer certificate"]
+  },
+  {
+    "id": "bhavantar-bharpayee",
+    "name": "Bhavantar Bharpayee Yojana (Haryana)",
+    "type": "state",
+    "states": ["Haryana"],
+    "description": "Haryana government price deficiency payment scheme compensating farmers for losses when market prices of horticultural crops fall below protected prices",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Difference between protected price and actual selling price paid directly to farmer's bank account for registered vegetables and fruits sold in mandis",
+    "how_to_apply": "Register on Meri Fasal Mera Byora portal (fasal.haryana.gov.in) with crop and land details before selling season",
+    "documents": ["Aadhaar card", "Jamabandi (land record)", "Bank account details", "Mandi sale receipt", "Family ID (PPP)"]
+  },
+  {
+    "id": "haryana-solar-pump",
+    "name": "Haryana Solar Water Pump Scheme",
+    "type": "state",
+    "states": ["Haryana"],
+    "description": "Haryana government provides solar-powered water pumps to farmers at subsidized rates for irrigation, reducing dependence on diesel and electricity",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Up to 75% subsidy on solar water pump sets (2HP to 10HP capacity). Reduces irrigation costs and provides reliable power for water pumping",
+    "how_to_apply": "Apply through Saral Haryana portal (saralharyana.gov.in) or district agriculture office. Pumps supplied through empaneled vendors",
+    "documents": ["Aadhaar card", "Jamabandi (land record)", "Bank account details", "Electricity connection details (if existing)", "Family ID (PPP)"]
+  },
+  {
+    "id": "mukhya-mantri-krishak-sathi",
+    "name": "Mukhya Mantri Krishak Sathi Yojana",
+    "type": "state",
+    "states": ["Rajasthan"],
+    "description": "Rajasthan accident insurance scheme providing financial assistance to farmers and farm laborers in case of death or disability due to farm accidents",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 2 lakh in case of death, Rs 50000 for permanent partial disability, and Rs 5000-25000 for finger/limb injuries due to farming accidents",
+    "how_to_apply": "File claim through district agriculture officer or e-Mitra center within 6 months of the accident with medical and FIR reports",
+    "documents": ["Aadhaar card", "Land ownership records", "FIR or accident report", "Medical certificate/post-mortem report", "Bank account details of nominee"]
+  },
+  {
+    "id": "rajasthan-micro-irrigation",
+    "name": "Rajasthan Micro Irrigation Subsidy Scheme",
+    "type": "state",
+    "states": ["Rajasthan"],
+    "description": "Rajasthan state scheme supplementing central PMKSY to provide higher subsidies on drip and sprinkler irrigation to conserve water in arid regions",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Up to 70% subsidy on drip irrigation and 60% on sprinkler systems for general category, up to 75% for SC/ST farmers, through combined central-state funding",
+    "how_to_apply": "Apply through Raj Kisan Sathi portal (rajkisan.rajasthan.gov.in) or district agriculture/horticulture department office",
+    "documents": ["Aadhaar card", "Jamabandi (land record)", "Bank account details", "Quotation from empaneled supplier", "Caste certificate (if applicable)"]
+  },
+  {
+    "id": "kisan-suryodaya",
+    "name": "Kisan Suryodaya Yojana",
+    "type": "state",
+    "states": ["Gujarat"],
+    "description": "Gujarat government initiative to provide daytime electricity to farmers for irrigation through dedicated solar-powered feeder lines and grid infrastructure",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Daytime electricity supply (5 AM to 9 PM) for agricultural purposes at subsidized rates through dedicated solar feeder infrastructure",
+    "how_to_apply": "Apply through nearest PGVCL/MGVCL/DGVCL/UGVCL office or through iKhedut portal (ikhedut.gujarat.gov.in) for new agricultural connection",
+    "documents": ["Aadhaar card", "7/12 utara and 8A extract (land records)", "Bank account details", "Existing electricity connection details"]
+  },
+  {
+    "id": "gujarat-crop-insurance",
+    "name": "Gujarat State Crop Insurance Scheme",
+    "type": "state",
+    "states": ["Gujarat"],
+    "description": "Gujarat state scheme working alongside PMFBY providing crop insurance coverage with state-subsidized premium for all major crops in the state",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Crop insurance coverage at subsidized premium rates, state top-up to PMFBY compensation for major crop losses due to natural calamities",
+    "how_to_apply": "Enroll through bank branch, CSC center, or through iKhedut portal during the seasonal enrollment window",
+    "documents": ["Aadhaar card", "7/12 utara (land record)", "Bank account details", "Sowing certificate from Talati/Gram Sevak"]
+  },
+  {
+    "id": "krishak-bandhu",
+    "name": "Krishak Bandhu Scheme",
+    "type": "state",
+    "states": ["West Bengal"],
+    "description": "West Bengal government's direct income support scheme providing financial assistance to all enrolled farmers in the state for agricultural investment",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 10000 per year for farmers with more than 1 acre and Rs 4000 per year for farmers with up to 1 acre, paid in two installments",
+    "how_to_apply": "Register at Krishak Bandhu portal (krishakbandhu.net) or through local Block Development Office with land documents",
+    "documents": ["Aadhaar card", "Plot information (Khatian/Dag number)", "Bank account details", "Ration card"]
+  },
+  {
+    "id": "krishak-bandhu-death-benefit",
+    "name": "Krishak Bandhu Death Benefit Scheme",
+    "type": "state",
+    "states": ["West Bengal"],
+    "description": "West Bengal scheme providing ex-gratia lump sum payment to the family of registered farmers in case of death from any cause between ages 18-60",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 2 lakh one-time payment to nominee/family of deceased enrolled farmer, no premium required from farmer, fully funded by state government",
+    "how_to_apply": "Nominee files claim through Block Development Office or Krishak Bandhu portal with death certificate within 90 days of death",
+    "documents": ["Deceased farmer's Aadhaar card", "Death certificate", "Nominee Aadhaar card", "Bank account details of nominee", "Krishak Bandhu registration proof"]
+  },
+  {
+    "id": "bihar-fasal-sahayata",
+    "name": "Bihar Rajya Fasal Sahayata Yojana",
+    "type": "state",
+    "states": ["Bihar"],
+    "description": "Bihar state crop damage compensation scheme providing direct financial assistance to farmers for crop loss without requiring premium payment",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Rs 7500 per hectare for up to 20% crop damage, Rs 10000 per hectare for more than 20% crop damage, maximum 2 hectares per farmer",
+    "how_to_apply": "Register on Bihar DBT Agriculture portal (dbtagriculture.bihar.gov.in) during the crop season and file claim if crop damage occurs",
+    "documents": ["Aadhaar card", "Land ownership records (Jamabandi/LPC)", "Bank account details", "Self-declaration of crop sown"]
+  },
+  {
+    "id": "bihar-diesel-subsidy",
+    "name": "Bihar Diesel Subsidy Scheme",
+    "type": "state",
+    "states": ["Bihar"],
+    "description": "Bihar government provides diesel subsidy to small and marginal farmers for irrigation during Kharif and Rabi seasons to reduce cultivation costs",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Rs 75 per litre diesel subsidy for up to 12 litres per acre for irrigating crops, paid directly to bank account on submission of diesel purchase receipt",
+    "how_to_apply": "Register on Bihar DBT Agriculture portal (dbtagriculture.bihar.gov.in) and upload diesel purchase receipts with crop details",
+    "documents": ["Aadhaar card", "Land ownership records", "Bank account details", "Diesel purchase receipt", "Self-declaration of crop sown"]
+  },
+  {
+    "id": "kalia",
+    "name": "KALIA (Krushak Assistance for Livelihood and Income Augmentation)",
+    "type": "state",
+    "states": ["Odisha"],
+    "description": "Odisha government scheme providing financial assistance to small and marginal farmers for cultivation, livelihood support, and vulnerable agricultural households",
+    "eligibility": {
+      "land_holding_max_acres": 5,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Rs 12500 per year (Rs 5000 Kharif + Rs 5000 Rabi + Rs 2500 additional support) per farmer family for crop cultivation and allied activities",
+    "how_to_apply": "Register at kalia.odisha.gov.in or through district agriculture office with land and identity documents",
+    "documents": ["Aadhaar card", "Land ownership records", "Bank account details", "Ration card"]
+  },
+  {
+    "id": "kalia-life-insurance",
+    "name": "KALIA Life Insurance Scheme",
+    "type": "state",
+    "states": ["Odisha"],
+    "description": "Odisha government provides life insurance coverage to KALIA beneficiary farmers at no cost, with premium fully borne by the state government",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal"],
+      "crops": []
+    },
+    "benefits": "Rs 2 lakh life insurance coverage for KALIA beneficiaries aged 18-50 years, Rs 2 lakh additional personal accident cover, premium paid by state government",
+    "how_to_apply": "Automatically enrolled for KALIA beneficiaries through state agriculture department. Verify enrollment at kalia.odisha.gov.in",
+    "documents": ["Aadhaar card", "KALIA beneficiary ID", "Nominee details with Aadhaar", "Bank account details"]
+  },
+  {
+    "id": "kerala-vegetable-development",
+    "name": "Kerala Vegetable Development Programme",
+    "type": "state",
+    "states": ["Kerala"],
+    "description": "Kerala state programme promoting commercial vegetable cultivation through financial assistance for seeds, inputs, and infrastructure to achieve self-sufficiency",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": []
+    },
+    "benefits": "Subsidized seeds and planting materials, financial assistance up to Rs 30000 per hectare for vegetable cultivation, polyhouse and net house construction support",
+    "how_to_apply": "Apply through Krishi Bhavan (block agriculture office) or through the Kerala Agriculture Department's online portal",
+    "documents": ["Aadhaar card", "Land ownership records (thandaper)", "Bank account details", "Cultivation plan"]
+  },
+  {
+    "id": "kerala-coconut-insurance",
+    "name": "Kerala Coconut Palm Insurance Scheme",
+    "type": "state",
+    "states": ["Kerala"],
+    "description": "Kerala state coconut palm insurance scheme providing coverage against damage or loss of coconut palms due to natural calamities and diseases",
+    "eligibility": {
+      "land_holding_max_acres": null,
+      "categories": ["small", "marginal", "large"],
+      "crops": ["coconut"]
+    },
+    "benefits": "Insurance coverage up to Rs 32000 per coconut palm for bearing trees and Rs 16000 for non-bearing trees damaged by natural calamities or diseases",
+    "how_to_apply": "Apply through Coconut Development Board (CDB) office, Krishi Bhavan, or through CDB online portal with details of coconut palms",
+    "documents": ["Aadhaar card", "Land ownership records", "Details of coconut palms (age, number)", "Bank account details", "Previous yield details"]
+  }
+]
