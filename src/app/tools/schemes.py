@@ -1,35 +1,80 @@
-import boto3
+"""Government scheme eligibility tool — curated JSON dataset, filtered at runtime."""
+import json
+import logging
+from pathlib import Path
 
-from app.config import settings
+logger = logging.getLogger(__name__)
+
+_SCHEMES_PATH = Path(__file__).resolve().parent.parent / "assets" / "schemes.json"
+_SCHEMES: list[dict] = []
+
+
+def _load_schemes() -> list[dict]:
+    global _SCHEMES
+    if _SCHEMES:
+        return _SCHEMES
+    try:
+        _SCHEMES = json.loads(_SCHEMES_PATH.read_text(encoding="utf-8"))
+        logger.info("Loaded %d government schemes from %s", len(_SCHEMES), _SCHEMES_PATH)
+    except Exception:
+        logger.exception("Failed to load schemes.json")
+        _SCHEMES = []
+    return _SCHEMES
+
+
+def _classify_farmer(land_holding: float) -> str:
+    """Classify farmer category based on land holding in acres."""
+    if land_holding <= 2.5:
+        return "marginal"
+    elif land_holding <= 5.0:
+        return "small"
+    return "large"
 
 
 def check_scheme_eligibility(farmer_profile: dict) -> dict:
-    if not settings.amazon_q_app_id:
-        return {"schemes": "Amazon Q Business not configured", "sources": []}
+    """Filter schemes by farmer profile and return top 5 matches."""
+    schemes = _load_schemes()
+    state = farmer_profile.get("state", "")
+    crop = farmer_profile.get("crop", "")
+    land_holding = farmer_profile.get("land_holding", 0)
+    category = farmer_profile.get("category", "") or _classify_farmer(land_holding)
 
-    query_parts = []
-    if farmer_profile.get("land_holding"):
-        query_parts.append(f"land holding {farmer_profile['land_holding']} acres")
-    if farmer_profile.get("state"):
-        query_parts.append(f"in {farmer_profile['state']}")
-    if farmer_profile.get("crop"):
-        query_parts.append(f"growing {farmer_profile['crop']}")
-    if farmer_profile.get("category"):
-        query_parts.append(f"category {farmer_profile['category']}")
+    matched = []
+    for s in schemes:
+        s_states = s.get("states", [])
+        if "all" not in s_states and state and state not in s_states:
+            continue
+        if not state and "all" not in s_states:
+            continue
 
-    query = "What government schemes is a farmer eligible for with " + ", ".join(query_parts) + "?"
+        elig = s.get("eligibility", {})
+        allowed_cats = elig.get("categories", [])
+        if allowed_cats and category and category not in allowed_cats:
+            continue
 
-    try:
-        client = boto3.client("qbusiness", region_name=settings.aws_default_region)
-        response = client.chat_sync(
-            applicationId=settings.amazon_q_app_id,
-            userMessage=query,
-        )
-        return {
-            "schemes": response.get("systemMessage", ""),
-            "sources": [
-                s.get("title", "") for s in response.get("sourceAttributions", [])
-            ],
-        }
-    except Exception as e:
-        return {"error": str(e)}
+        scheme_crops = elig.get("crops", [])
+        if scheme_crops and crop and crop.lower() not in [c.lower() for c in scheme_crops]:
+            continue
+
+        max_acres = elig.get("land_holding_max_acres")
+        if max_acres is not None and land_holding > max_acres:
+            continue
+
+        matched.append(s)
+
+    matched.sort(key=lambda s: (0 if s.get("type") == "state" else 1))
+    top = matched[:5]
+
+    return {
+        "schemes": [
+            {
+                "name": s["name"],
+                "type": s.get("type", "central"),
+                "benefits": s.get("benefits", ""),
+                "how_to_apply": s.get("how_to_apply", ""),
+                "documents": s.get("documents", []),
+            }
+            for s in top
+        ],
+        "total_matched": len(matched),
+    }
