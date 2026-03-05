@@ -55,21 +55,15 @@ def get_weather_forecast(district: str, state: str) -> dict:
         fc.raise_for_status()
         daily = fc.json()["daily"]
 
-        forecast = []
+        days_with_temp = []   # today + tomorrow (full detail)
+        days_outlook = []     # days 3-5 (condition + rain only, no temp)
         alerts = []
+
         for i, date in enumerate(daily["time"]):
             max_temp = daily["temperature_2m_max"][i]
             min_temp = daily["temperature_2m_min"][i]
             rain_mm = daily["precipitation_sum"][i] or 0.0
             condition = _wmo_condition(daily["weathercode"][i] or 0)
-
-            forecast.append({
-                "date": date,
-                "max_temp": max_temp,
-                "min_temp": min_temp,
-                "rain_mm": rain_mm,
-                "condition": condition,
-            })
 
             if rain_mm > 50:
                 alerts.append(f"Heavy rain alert ({rain_mm}mm) on {date}")
@@ -78,7 +72,29 @@ def get_weather_forecast(district: str, state: str) -> dict:
             if min_temp is not None and min_temp < 4:
                 alerts.append(f"Frost alert ({min_temp}°C) on {date}")
 
-        result = {"district": district, "state": state, "forecast": forecast, "alerts": alerts}
+            if i < 2:
+                days_with_temp.append({
+                    "date": date,
+                    "max_temp_c": max_temp,
+                    "min_temp_c": min_temp,
+                    "rain_mm": rain_mm,
+                    "condition": condition,
+                })
+            else:
+                days_outlook.append({
+                    "date": date,
+                    "condition": condition,
+                    "rain_mm": rain_mm,
+                })
+
+        result = {
+            "district": district,
+            "state": state,
+            "next_2_days": days_with_temp,
+            "outlook_days_3_to_5": days_outlook,
+            "alerts": alerts,
+            "note": "Temperature details for days 3-5 are available if the farmer explicitly asks.",
+        }
         cache_set(cache_key, result, ttl_seconds=7200)
         return result
 

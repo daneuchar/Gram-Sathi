@@ -24,22 +24,22 @@ Gram Sathi: one missed call (₹0) triggers an AI voice callback delivering live
 ### FR3: Live Mandi Prices
 - Fetch real-time commodity prices from data.gov.in (1,266 mandis across India)
 - Return prices in ₹/quintal for the farmer's nearest markets
-- Cache with 30-minute refresh
+- Cache with 30-minute refresh -> caching in memory ( at start of application )
 
 ### FR4: Weather Forecast
 - Provide 5-day hyperlocal weather forecast (temperature, rainfall, humidity)
-- Alert for severe conditions: heavy rain >50mm, heatwave >45°C, frost <4°C
+- Alert for severe conditions: heavy rain >50mm, heatwave >45°C, frost <4°C ( cached for 2 locations and rotate cache  ) 
 
 ### FR5: Government Scheme Matching
 - Match farmer profile against 1,000+ central and state government schemes
 - Source: MyScheme.gov.in dataset via Amazon Q Business
 - Return eligibility, benefit amount, and how to apply
 
-### FR6: Crop Advisory
+### FR6: Crop Advisory ( mordern farming techniques )
 - Season-aware, region-specific farming guidance
 - Sowing, irrigation, pest management, fertilizer, and harvest advice
 
-### FR7: Progressive Farmer Profile
+### FR7: Progressive Farmer Profile ( IMPORTANT )
 - Build farmer profile naturally through conversation (state, district, crops, land size)
 - Personalize all responses based on accumulated profile data
 - No registration or form-filling required
