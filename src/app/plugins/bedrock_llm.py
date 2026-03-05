@@ -158,7 +158,7 @@ class _BedrockLLMStream(llm.LLMStream):
         kwargs: dict[str, Any] = {
             "modelId": settings.llama_model_id,
             "messages": messages,
-            "inferenceConfig": {"maxTokens": 1024, "temperature": 0.2},
+            "inferenceConfig": {"maxTokens": 2048, "temperature": 0.2},
         }
         if system_text:
             kwargs["system"] = [{"text": system_text}]
@@ -201,6 +201,7 @@ class _BedrockLLMStream(llm.LLMStream):
         else:
             text = " ".join(p["text"] for p in parts if "text" in p)
             text = _strip_thinking(text)
+            logger.info("[bedrock] response text (%d chars): %s", len(text), text[:200])
             if text:
                 self._event_ch.send_nowait(
                     ChatChunk(
