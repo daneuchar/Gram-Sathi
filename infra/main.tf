@@ -141,3 +141,104 @@ resource "aws_iam_instance_profile" "gram_sathi" {
   name = "gram-sathi-instance-profile"
   role = aws_iam_role.gram_sathi.name
 }
+
+# SSM Parameters — fill real values before first boot:
+#   aws ssm put-parameter --name /gram-sathi/sarvam_api_key --value "sk-..." \
+#     --type SecureString --overwrite --region ap-south-1
+#   aws ssm put-parameter --name /gram-sathi/data_gov_api_key --value "..." \
+#     --type SecureString --overwrite --region ap-south-1
+
+resource "aws_ssm_parameter" "sarvam_api_key" {
+  name  = "/gram-sathi/sarvam_api_key"
+  type  = "SecureString"
+  value = "REPLACE_ME"
+
+  lifecycle {
+    # Prevent Terraform from overwriting real values you set manually
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "data_gov_api_key" {
+  name  = "/gram-sathi/data_gov_api_key"
+  type  = "SecureString"
+  value = "REPLACE_ME"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+locals {
+  user_data = <<-EOF
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # All output logged — SSH and run: tail -f /var/log/gram-sathi-init.log
+    exec > /var/log/gram-sathi-init.log 2>&1
+
+    echo "=== [1/6] Installing Docker and dependencies ==="
+    apt-get update -qq
+    apt-get install -y -qq docker.io docker-compose-plugin git awscli
+    systemctl enable --now docker
+
+    echo "=== [2/6] Cloning repository ==="
+    git clone https://github.com/daneuchar/Gram-Sathi.git /opt/gram-sathi
+    cd /opt/gram-sathi
+
+    echo "=== [3/6] Fetching secrets from SSM ==="
+    SARVAM_KEY=$(aws ssm get-parameter \
+      --name /gram-sathi/sarvam_api_key \
+      --with-decryption \
+      --query Parameter.Value \
+      --output text \
+      --region ${var.region})
+
+    DATA_GOV_KEY=$(aws ssm get-parameter \
+      --name /gram-sathi/data_gov_api_key \
+      --with-decryption \
+      --query Parameter.Value \
+      --output text \
+      --region ${var.region})
+
+    echo "=== [4/6] Detecting public IP ==="
+    PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+
+    echo "=== [5/6] Writing .env ==="
+    cat > .env <<ENVEOF
+    AWS_DEFAULT_REGION=${var.region}
+    BEDROCK_MODEL_ID=us.meta.llama3-3-70b-instruct-v1:0
+    SARVAM_API_KEY=$SARVAM_KEY
+    DATA_GOV_API_KEY=$DATA_GOV_KEY
+    DATABASE_URL=postgresql+asyncpg://gramvaani:gramvaani@postgres:5432/gramvaani
+    LIVEKIT_URL=ws://livekit:7880
+    LIVEKIT_API_KEY=devkey
+    LIVEKIT_API_SECRET=secret
+    DEBUG=false
+    PUBLIC_URL=http://$PUBLIC_IP:8000
+    LIVEKIT_PUBLIC_URL=ws://$PUBLIC_IP:7880
+    ENVEOF
+
+    echo "=== [6/6] Running deploy.sh ==="
+    bash deploy.sh
+
+    echo "=== Boot complete ==="
+  EOF
+}
+
+resource "aws_instance" "gram_sathi" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t3.medium"
+  key_name               = aws_key_pair.gram_sathi.key_name
+  vpc_security_group_ids = [aws_security_group.gram_sathi.id]
+  iam_instance_profile   = aws_iam_instance_profile.gram_sathi.name
+  user_data              = local.user_data
+
+  root_block_device {
+    volume_type = "gp3"
+    volume_size = 20
+  }
+
+  tags = {
+    Name = "gram-sathi"
+  }
+}
