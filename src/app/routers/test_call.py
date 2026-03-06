@@ -35,13 +35,12 @@ def _create_token(room_name: str, identity: str = "web-tester", phone: str = "+9
     return token.to_jwt()
 
 
-@router.get("/test")
-async def test_page():
-    """Serve a minimal voice test page using LiveKit JS SDK."""
+@router.post("/api/test/create-room")
+async def create_test_room():
+    """Create a LiveKit room with agent dispatch and return token."""
     livekit_url = settings.livekit_public_url or settings.livekit_url or "ws://localhost:7880"
     room_name = _room_name()
 
-    # Pre-create the room with agent dispatch so the worker picks up the job
     async with LiveKitAPI(
         url=livekit_url,
         api_key=settings.livekit_api_key,
@@ -56,6 +55,12 @@ async def test_page():
     logger.info("Created test room %s with agent dispatch", room_name)
 
     jwt = _create_token(room_name)
+    return {"token": jwt, "room_name": room_name, "livekit_url": livekit_url}
+
+
+@router.get("/test")
+async def test_page():
+    """Serve a minimal voice test page using LiveKit JS SDK."""
 
     html = f"""<!DOCTYPE html>
 <html>
@@ -88,9 +93,6 @@ async def test_page():
     <div id="log"></div>
 
     <script>
-        const LIVEKIT_URL = "{livekit_url}";
-        const TOKEN = "{jwt}";
-        const ROOM_NAME = "{room_name}";
         let room = null;
 
         function ts() {{ return new Date().toISOString().substring(11,23); }}
@@ -121,13 +123,31 @@ async def test_page():
             document.getElementById('btnConnect').disabled = true;
             setStatus('Checking microphone permission...');
             log('=== Starting call ===');
-            log(`LiveKit URL: ${{LIVEKIT_URL}}`);
-            log(`Room: ${{ROOM_NAME}}`);
 
             const permState = await checkMicPermission();
             if (permState === 'denied') {{
                 setStatus('Microphone is blocked. Please allow mic access in browser settings.', 'err');
                 log('ERROR: microphone permission denied by browser');
+                document.getElementById('btnConnect').disabled = false;
+                return;
+            }}
+
+            // Create room and get token on demand
+            setStatus('Creating room...');
+            log('requesting room and token...');
+            let LIVEKIT_URL, TOKEN, ROOM_NAME;
+            try {{
+                const resp = await fetch('/api/test/create-room', {{ method: 'POST' }});
+                if (!resp.ok) throw new Error(`HTTP ${{resp.status}}`);
+                const data = await resp.json();
+                LIVEKIT_URL = data.livekit_url;
+                TOKEN = data.token;
+                ROOM_NAME = data.room_name;
+                log(`LiveKit URL: ${{LIVEKIT_URL}}`);
+                log(`Room: ${{ROOM_NAME}}`);
+            }} catch (e) {{
+                log(`ERROR creating room: ${{e.message}}`);
+                setStatus(`Error: ${{e.message}}`, 'err');
                 document.getElementById('btnConnect').disabled = false;
                 return;
             }}
