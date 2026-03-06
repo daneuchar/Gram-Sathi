@@ -61,86 +61,165 @@ async def test_page():
 <html>
 <head>
     <title>Gram Saathi — Voice Test</title>
-    <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js"></script>
     <style>
-        body {{ font-family: system-ui, sans-serif; max-width: 600px; margin: 60px auto; padding: 0 20px; }}
+        body {{ font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 20px; }}
         h1 {{ font-size: 1.4em; }}
-        #status {{ padding: 12px; border-radius: 8px; background: #f0f0f0; margin: 20px 0; }}
-        button {{ font-size: 1.1em; padding: 12px 32px; border-radius: 8px; border: none; cursor: pointer; }}
-        #connect {{ background: #2563eb; color: white; }}
-        #connect:disabled {{ background: #94a3b8; cursor: not-allowed; }}
-        #disconnect {{ background: #dc2626; color: white; display: none; }}
-        #transcript {{ margin-top: 20px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0;
-                       border-radius: 8px; min-height: 100px; white-space: pre-wrap; font-size: 0.95em; }}
+        #status {{ padding: 12px; border-radius: 8px; background: #f0f0f0; margin: 16px 0; font-weight: 600; }}
+        #status.ok {{ background: #dcfce7; }}
+        #status.err {{ background: #fee2e2; }}
+        .btns {{ display: flex; gap: 12px; margin: 12px 0; }}
+        button {{ font-size: 1em; padding: 10px 28px; border-radius: 8px; border: none; cursor: pointer; }}
+        #btnConnect {{ background: #2563eb; color: white; }}
+        #btnConnect:disabled {{ background: #94a3b8; cursor: not-allowed; }}
+        #btnDisconnect {{ background: #dc2626; color: white; display: none; }}
+        #log {{ margin-top: 16px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0;
+                border-radius: 8px; min-height: 120px; white-space: pre-wrap; font-size: 0.85em;
+                font-family: monospace; max-height: 400px; overflow-y: auto; }}
     </style>
 </head>
 <body>
     <h1>Gram Saathi — Voice Test</h1>
-    <div id="status">Ready to connect.</div>
-    <button id="connect" onclick="start()">Start Call</button>
-    <button id="disconnect" onclick="stop()">End Call</button>
-    <div id="transcript"></div>
+    <div id="status">Ready. Click Start Call.</div>
+    <div class="btns">
+        <button id="btnConnect" onclick="start()">Start Call</button>
+        <button id="btnDisconnect" onclick="stop()">End Call</button>
+    </div>
+    <div id="log"></div>
 
     <script>
-        const url = "{livekit_url}";
-        const token = "{jwt}";
+        const LIVEKIT_URL = "{livekit_url}";
+        const TOKEN = "{jwt}";
+        const ROOM_NAME = "{room_name}";
         let room = null;
 
-        function log(msg) {{
-            document.getElementById('transcript').textContent += msg + '\\n';
+        function ts() {{ return new Date().toISOString().substring(11,23); }}
+        function log(msg, level) {{
+            const el = document.getElementById('log');
+            el.textContent += `[${{ts()}}] ${{msg}}\\n`;
+            el.scrollTop = el.scrollHeight;
+            if (level) console[level](msg);
+        }}
+        function setStatus(msg, cls) {{
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.className = cls || '';
         }}
 
-        function setStatus(msg) {{
-            document.getElementById('status').textContent = msg;
+        async function checkMicPermission() {{
+            try {{
+                const perm = await navigator.permissions.query({{ name: 'microphone' }});
+                log(`mic permission state: ${{perm.state}}`);
+                return perm.state;
+            }} catch (e) {{
+                log(`permissions API not available: ${{e.message}}`);
+                return 'unknown';
+            }}
         }}
 
         async function start() {{
-            const LivekitClient = window.LivekitClient;
-            room = new LivekitClient.Room({{
-                audioCaptureDefaults: {{ autoGainControl: true, noiseSuppression: true }},
+            document.getElementById('btnConnect').disabled = true;
+            setStatus('Checking microphone permission...');
+            log('=== Starting call ===');
+            log(`LiveKit URL: ${{LIVEKIT_URL}}`);
+            log(`Room: ${{ROOM_NAME}}`);
+
+            const permState = await checkMicPermission();
+            if (permState === 'denied') {{
+                setStatus('Microphone is blocked. Please allow mic access in browser settings.', 'err');
+                log('ERROR: microphone permission denied by browser');
+                document.getElementById('btnConnect').disabled = false;
+                return;
+            }}
+
+            const LK = window.LivekitClient;
+            room = new LK.Room({{
+                audioCaptureDefaults: {{ autoGainControl: true, noiseSuppression: true, echoCancellation: true }},
+                adaptiveStream: true,
+                dynacast: true,
             }});
 
-            room.on(LivekitClient.RoomEvent.TrackSubscribed, (track) => {{
+            room.on(LK.RoomEvent.Connected, () => {{
+                log(`connected to room, sid=${{room.localParticipant.sid}}`);
+            }});
+
+            room.on(LK.RoomEvent.TrackPublished, (pub, participant) => {{
+                log(`track published: ${{participant.identity}} kind=${{pub.kind}} source=${{pub.trackInfo?.source}}`);
+            }});
+
+            room.on(LK.RoomEvent.LocalTrackPublished, (pub) => {{
+                log(`LOCAL track published: kind=${{pub.kind}} trackSid=${{pub.trackSid}}`);
+            }});
+
+            room.on(LK.RoomEvent.LocalTrackUnpublished, (pub) => {{
+                log(`LOCAL track unpublished: kind=${{pub.kind}}`);
+            }});
+
+            room.on(LK.RoomEvent.TrackSubscribed, (track, pub, participant) => {{
+                log(`track subscribed from ${{participant.identity}}: kind=${{track.kind}}`);
                 if (track.kind === 'audio') {{
                     const el = track.attach();
+                    el.autoplay = true;
                     document.body.appendChild(el);
-                    log('[agent audio connected]');
+                    log('agent audio attached — you should hear the agent');
+                    setStatus('Agent speaking...', 'ok');
                 }}
             }});
 
-            room.on(LivekitClient.RoomEvent.ParticipantConnected, (participant) => {{
-                log('[agent joined: ' + participant.identity + ']');
+            room.on(LK.RoomEvent.ParticipantConnected, (p) => {{
+                log(`participant joined: ${{p.identity}}`);
+                setStatus(`Agent connected: ${{p.identity}}`, 'ok');
             }});
 
-            room.on(LivekitClient.RoomEvent.Disconnected, () => {{
-                setStatus('Disconnected.');
-                document.getElementById('connect').style.display = '';
-                document.getElementById('connect').disabled = false;
-                document.getElementById('disconnect').style.display = 'none';
+            room.on(LK.RoomEvent.ParticipantDisconnected, (p) => {{
+                log(`participant left: ${{p.identity}}`);
+            }});
+
+            room.on(LK.RoomEvent.Disconnected, (reason) => {{
+                log(`disconnected from room, reason=${{reason}}`);
+                setStatus('Disconnected.', '');
+                document.getElementById('btnConnect').style.display = '';
+                document.getElementById('btnConnect').disabled = false;
+                document.getElementById('btnDisconnect').style.display = 'none';
+            }});
+
+            room.on(LK.RoomEvent.ConnectionStateChanged, (state) => {{
+                log(`connection state: ${{state}}`);
+                if (state === 'connected') setStatus('Connected — waiting for agent...', 'ok');
+                if (state === 'reconnecting') setStatus('Reconnecting...', '');
+            }});
+
+            room.on(LK.RoomEvent.MediaDevicesError, (e) => {{
+                log(`MEDIA DEVICES ERROR: ${{e.name}}: ${{e.message}}`);
+                setStatus(`Mic error: ${{e.message}}`, 'err');
             }});
 
             try {{
-                setStatus('Connecting...');
-                document.getElementById('connect').disabled = true;
-                await room.connect(url, token);
+                setStatus('Connecting to LiveKit...');
+                log('calling room.connect...');
+                await room.connect(LIVEKIT_URL, TOKEN);
+                log('room.connect succeeded');
+
+                setStatus('Requesting microphone...');
+                log('calling setMicrophoneEnabled(true)...');
                 await room.localParticipant.setMicrophoneEnabled(true);
-                setStatus('Connected — waiting for agent...');
-                document.getElementById('connect').style.display = 'none';
-                document.getElementById('disconnect').style.display = '';
-                log('[connected to room: {room_name}]');
-                log('[mic enabled — waiting for agent to join...]');
+                const micPub = room.localParticipant.getTrackPublication(LK.Track.Source.Microphone);
+                log(`mic track published: ${{micPub ? 'YES sid=' + micPub.trackSid : 'NO — track not found'}}`);
+
+                setStatus('Mic active — speak now', 'ok');
+                document.getElementById('btnConnect').style.display = 'none';
+                document.getElementById('btnDisconnect').style.display = '';
+                log('waiting for agent to join and respond...');
             }} catch (e) {{
-                setStatus('Connection failed: ' + e.message);
-                document.getElementById('connect').disabled = false;
-                log('[error] ' + e.message);
+                log(`ERROR in start(): ${{e.name}}: ${{e.message}}`);
+                setStatus(`Error: ${{e.message}}`, 'err');
+                document.getElementById('btnConnect').disabled = false;
             }}
         }}
 
         async function stop() {{
-            if (room) {{
-                await room.disconnect();
-                room = null;
-            }}
+            log('disconnecting...');
+            if (room) {{ await room.disconnect(); room = null; }}
         }}
     </script>
 </body>
