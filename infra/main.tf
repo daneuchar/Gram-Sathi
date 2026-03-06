@@ -1,4 +1,5 @@
 terraform {
+  required_version = "~> 1.7"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -10,6 +11,8 @@ terraform {
 provider "aws" {
   region = var.region
 }
+
+data "aws_caller_identity" "current" {}
 
 # Latest Ubuntu 22.04 LTS AMI (Canonical)
 data "aws_ami" "ubuntu" {
@@ -79,6 +82,7 @@ resource "aws_security_group" "gram_sathi" {
   }
 
   egress {
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -101,7 +105,7 @@ data "aws_iam_policy_document" "ec2_assume_role" {
 data "aws_iam_policy_document" "ssm_read" {
   statement {
     actions   = ["ssm:GetParameter"]
-    resources = ["arn:aws:ssm:${var.region}:*:parameter/gram-sathi/*"]
+    resources = ["arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/gram-sathi/*"]
   }
 }
 
@@ -116,10 +120,21 @@ resource "aws_iam_role_policy" "ssm_read" {
   policy = data.aws_iam_policy_document.ssm_read.json
 }
 
-# Attach AWS-managed Bedrock policy — lets the agent call Llama 3.3 without static keys
-resource "aws_iam_role_policy_attachment" "bedrock" {
-  role       = aws_iam_role.gram_sathi.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonBedrockFullAccess"
+# Inline policy: only allow Bedrock inference (no create/delete/modify permissions)
+data "aws_iam_policy_document" "bedrock_invoke" {
+  statement {
+    actions = [
+      "bedrock:InvokeModel",
+      "bedrock:InvokeModelWithResponseStream",
+    ]
+    resources = ["arn:aws:bedrock:${var.region}::foundation-model/*"]
+  }
+}
+
+resource "aws_iam_role_policy" "bedrock_invoke" {
+  name   = "gram-sathi-bedrock-invoke"
+  role   = aws_iam_role.gram_sathi.id
+  policy = data.aws_iam_policy_document.bedrock_invoke.json
 }
 
 resource "aws_iam_instance_profile" "gram_sathi" {
