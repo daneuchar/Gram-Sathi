@@ -1,0 +1,7 @@
+# infra/terraform.tfvars.example
+# Copy to terraform.tfvars and fill in your values:
+#   cp terraform.tfvars.example terraform.tfvars
+
+region              = "ap-south-1"
+your_ip_cidr        = "YOUR_PUBLIC_IP/32"   # find it: curl ifconfig.me
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
