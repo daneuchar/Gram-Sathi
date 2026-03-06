@@ -156,7 +156,7 @@ class _BedrockLLMStream(llm.LLMStream):
         messages, system_text = _build_bedrock_messages(self._chat_ctx)
 
         kwargs: dict[str, Any] = {
-            "modelId": settings.llama_model_id,
+            "modelId": settings.bedrock_model_id,
             "messages": messages,
             "inferenceConfig": {"maxTokens": 2048, "temperature": 0.2},
         }
@@ -218,7 +218,7 @@ class BedrockLLM(llm.LLM):
         super().__init__()
         self._client = boto3.client(
             "bedrock-runtime",
-            region_name=settings.aws_default_region,
+            region_name=settings.bedrock_region,
             aws_access_key_id=settings.aws_access_key_id or None,
             aws_secret_access_key=settings.aws_secret_access_key or None,
         )

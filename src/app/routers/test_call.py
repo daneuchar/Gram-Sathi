@@ -38,7 +38,7 @@ def _create_token(room_name: str, identity: str = "web-tester", phone: str = "+9
 @router.get("/test")
 async def test_page():
     """Serve a minimal voice test page using LiveKit JS SDK."""
-    livekit_url = settings.livekit_url or "ws://localhost:7880"
+    livekit_url = settings.livekit_public_url or settings.livekit_url or "ws://localhost:7880"
     room_name = _room_name()
 
     # Pre-create the room with agent dispatch so the worker picks up the job
