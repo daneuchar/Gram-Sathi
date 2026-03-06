@@ -12,7 +12,7 @@ output "instance_id" {
 
 output "ssh_command" {
   description = "SSH command to connect to the instance"
-  value       = "ssh -i ${trimsuffix(var.ssh_public_key_path, ".pub")} ubuntu@${aws_instance.gram_sathi.public_ip}"
+  value       = "ssh -i ${var.ssh_private_key_path} ubuntu@${aws_instance.gram_sathi.public_ip}"
 }
 
 output "dashboard_url" {
@@ -37,5 +37,5 @@ output "livekit_url" {
 
 output "init_log_command" {
   description = "SSH command to watch boot progress in real time"
-  value       = "ssh -i ${trimsuffix(var.ssh_public_key_path, ".pub")} ubuntu@${aws_instance.gram_sathi.public_ip} 'tail -f /var/log/gram-sathi-init.log'"
+  value       = "ssh -i ${var.ssh_private_key_path} ubuntu@${aws_instance.gram_sathi.public_ip} 'tail -f /var/log/gram-sathi-init.log'"
 }

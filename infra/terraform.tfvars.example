@@ -2,6 +2,11 @@
 # Copy to terraform.tfvars and fill in your values:
 #   cp terraform.tfvars.example terraform.tfvars
 
-region              = "ap-south-1"
-your_ip_cidr        = "YOUR_PUBLIC_IP/32"   # find it: curl ifconfig.me
-ssh_public_key_path = "~/.ssh/id_rsa.pub"
+region               = "ap-south-1"
+your_ip_cidr         = "YOUR_PUBLIC_IP/32"   # find it: curl ifconfig.me
+ssh_public_key_path  = "~/.ssh/id_rsa.pub"
+ssh_private_key_path = "~/.ssh/id_rsa"
+
+# Note: LiveKit credentials (LIVEKIT_API_KEY=devkey, LIVEKIT_API_SECRET=secret) are
+# hardcoded in the user data script. This is intentional for a hackathon/demo.
+# Move them to SSM parameters before any production use.
