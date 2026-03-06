@@ -6,6 +6,10 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "local" {
+    path = "~/.terraform-states/gram-sathi/terraform.tfstate"
+  }
 }
 
 provider "aws" {
