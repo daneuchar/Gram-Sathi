@@ -56,6 +56,8 @@ async def update_user_profile(
     state: str | None = None,
     district: str | None = None,
     language: str | None = None,
+    crops: str | None = None,
+    land_acres: float | None = None,
 ) -> None:
     """Update farmer profile fields. Only sets fields that are provided."""
     async with AsyncSessionLocal() as session:
@@ -71,4 +73,8 @@ async def update_user_profile(
             user.district = district
         if language is not None:
             user.language = language
+        if crops is not None:
+            user.crops = crops
+        if land_acres is not None:
+            user.land_acres = land_acres
         await session.commit()

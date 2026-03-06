@@ -305,6 +305,40 @@ async def entrypoint(ctx: JobContext) -> None:
 
     logger.info("[entrypoint] is_onboarding=%s, agent_type=%s", is_onboarding, type(agent).__name__)
 
+    # ── Pre-cache weather & mandi data ──
+    async def _precache():
+        # Always prefetch demo locations
+        demo_locations = [
+            ("Karnal", "Haryana"),
+            ("Hyderabad", "Telangana"),
+        ]
+        demo_crops = [
+            ("wheat", "Haryana"),
+            ("rice", "Haryana"),
+            ("tomato", "Telangana"),
+            ("rice", "Telangana"),
+        ]
+        # Add user-specific data if returning user
+        if profile and not is_onboarding:
+            state = profile.get("state", "")
+            district = profile.get("district", "")
+            if district and state and (district, state) not in demo_locations:
+                demo_locations.append((district, state))
+            crops_str = (user.crops or "") if user else ""
+            for crop in [c.strip() for c in crops_str.split(",") if c.strip()]:
+                if (crop, state) not in demo_crops:
+                    demo_crops.append((crop, state))
+        try:
+            for district, state in demo_locations:
+                await asyncio.to_thread(_get_weather, district, state)
+                logger.info("[precache] weather cached for %s, %s", district, state)
+            for crop, state in demo_crops:
+                await asyncio.to_thread(_get_mandi, crop, state, None)
+                logger.info("[precache] mandi cached for %s in %s", crop, state)
+        except Exception:
+            logger.debug("[precache] pre-cache failed (non-critical)", exc_info=True)
+    asyncio.create_task(_precache())
+
     # ── Create CallLog record ──
     call_sid = ctx.room.name
     call_start = datetime.utcnow()
@@ -375,12 +409,20 @@ async def entrypoint(ctx: JobContext) -> None:
             if item.role == "assistant":
                 profile_data, _ = extract_profile_marker(text)
                 if profile_data and phone:
+                    land_acres = profile_data.get("land_acres")
+                    if land_acres is not None:
+                        try:
+                            land_acres = float(land_acres)
+                        except (ValueError, TypeError):
+                            land_acres = None
                     await update_user_profile(
                         phone,
                         name=profile_data.get("name"),
                         state=profile_data.get("state"),
                         district=profile_data.get("district"),
                         language=profile_data.get("language"),
+                        crops=profile_data.get("crops"),
+                        land_acres=land_acres,
                     )
                     logger.info("[onboarding] profile saved for %s: %s", phone, profile_data)
 
