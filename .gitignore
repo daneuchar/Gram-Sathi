@@ -1,24 +1,52 @@
-.env
+# Python
 .venv/
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 .pytest_cache/
-.DS_Store
 *.egg-info/
 dist/
 build/
 .uv/
 uv.lock
-.worktrees/
-.playwright-mcp/
-# Frontend
-frontend/node_modules/
-frontend/.next/
 
-# Terraform
-infra/terraform.tfvars
+# Environment & secrets — never commit these
+.env
+.env.*
+!.env.example
+locals.env
+*.csv
+secrets/
+
+# Terraform — state and secrets
 infra/.terraform/
 infra/.terraform.lock.hcl
 infra/terraform.tfstate
 infra/terraform.tfstate.backup
+infra/tfplan
+infra/~/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfvars
+!**/*.tfvars.example
+**/.terraform/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+.worktrees/
+.playwright-mcp/

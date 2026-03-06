@@ -43,7 +43,23 @@ resource "aws_key_pair" "gram_sathi" {
 # Security Group
 resource "aws_security_group" "gram_sathi" {
   name        = "gram-sathi-sg"
-  description = "Gram Sathi EC2 — allow dashboard, backend, LiveKit, SSH"
+  description = "Gram Sathi EC2 - allow dashboard, backend, LiveKit, SSH"
+
+  ingress {
+    description = "HTTP for nginx and Certbot"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
     description = "SSH"
@@ -178,6 +194,46 @@ resource "aws_ssm_parameter" "data_gov_api_key" {
   }
 }
 
+resource "aws_ssm_parameter" "twilio_account_sid" {
+  name  = "/gram-sathi/twilio_account_sid"
+  type  = "SecureString"
+  value = "REPLACE_ME"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "twilio_auth_token" {
+  name  = "/gram-sathi/twilio_auth_token"
+  type  = "SecureString"
+  value = "REPLACE_ME"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "twilio_phone_number" {
+  name  = "/gram-sathi/twilio_phone_number"
+  type  = "String"
+  value = "REPLACE_ME"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "indian_api_key" {
+  name  = "/gram-sathi/indian_api_key"
+  type  = "SecureString"
+  value = "REPLACE_ME"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
 locals {
   user_data = <<-EOF
     #!/usr/bin/env bash
@@ -187,7 +243,7 @@ locals {
 
     echo "=== [1/6] Installing Docker and dependencies ==="
     apt-get update -qq
-    apt-get install -y -qq docker.io docker-compose-plugin git awscli
+    apt-get install -y -qq docker.io docker-compose-v2 git awscli
     systemctl enable --now docker
 
     echo "=== [2/6] Cloning repository ==="
@@ -209,15 +265,47 @@ locals {
       --output text \
       --region ${var.region})
 
-    echo "=== [4/6] Detecting public IP ==="
-    PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+    TWILIO_SID=$(aws ssm get-parameter \
+      --name /gram-sathi/twilio_account_sid \
+      --with-decryption \
+      --query Parameter.Value \
+      --output text \
+      --region ${var.region})
+
+    TWILIO_TOKEN=$(aws ssm get-parameter \
+      --name /gram-sathi/twilio_auth_token \
+      --with-decryption \
+      --query Parameter.Value \
+      --output text \
+      --region ${var.region})
+
+    TWILIO_PHONE=$(aws ssm get-parameter \
+      --name /gram-sathi/twilio_phone_number \
+      --query Parameter.Value \
+      --output text \
+      --region ${var.region})
+
+    INDIAN_KEY=$(aws ssm get-parameter \
+      --name /gram-sathi/indian_api_key \
+      --with-decryption \
+      --query Parameter.Value \
+      --output text \
+      --region ${var.region})
+
+    echo "=== [4/6] Setting public IP (Elastic IP) ==="
+    PUBLIC_IP="${aws_eip.gram_sathi.public_ip}"
 
     echo "=== [5/6] Writing .env ==="
     printf '%s\n' \
       "AWS_DEFAULT_REGION=${var.region}" \
-      "BEDROCK_MODEL_ID=us.meta.llama3-3-70b-instruct-v1:0" \
+      "BEDROCK_REGION=ap-south-1" \
+      "BEDROCK_MODEL_ID=meta.llama3-70b-instruct-v1:0" \
       "SARVAM_API_KEY=$SARVAM_KEY" \
       "DATA_GOV_API_KEY=$DATA_GOV_KEY" \
+      "TWILIO_ACCOUNT_SID=$TWILIO_SID" \
+      "TWILIO_AUTH_TOKEN=$TWILIO_TOKEN" \
+      "TWILIO_PHONE_NUMBER=$TWILIO_PHONE" \
+      "INDIAN_API_KEY=$INDIAN_KEY" \
       "DATABASE_URL=postgresql+asyncpg://gramvaani:gramvaani@postgres:5432/gramvaani" \
       "LIVEKIT_URL=ws://livekit:7880" \
       "LIVEKIT_API_KEY=devkey" \
@@ -232,6 +320,39 @@ locals {
 
     echo "=== Boot complete ==="
   EOF
+}
+
+resource "aws_eip" "gram_sathi" {
+  domain = "vpc"
+  tags = {
+    Name = "gram-sathi-eip"
+  }
+}
+
+resource "aws_eip_association" "gram_sathi" {
+  instance_id   = aws_instance.gram_sathi.id
+  allocation_id = aws_eip.gram_sathi.id
+}
+
+# Route53 — gramsaathi.in DNS records
+data "aws_route53_zone" "gram_sathi" {
+  zone_id = "Z01893901H6C90D2WCVL"
+}
+
+resource "aws_route53_record" "apex" {
+  zone_id = data.aws_route53_zone.gram_sathi.zone_id
+  name    = "gramsaathi.in"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.gram_sathi.public_ip]
+}
+
+resource "aws_route53_record" "www" {
+  zone_id = data.aws_route53_zone.gram_sathi.zone_id
+  name    = "www.gramsaathi.in"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.gram_sathi.public_ip]
 }
 
 resource "aws_instance" "gram_sathi" {

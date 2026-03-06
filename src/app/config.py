@@ -8,8 +8,9 @@ class Settings(BaseSettings):
     # AWS Bedrock
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
-    aws_default_region: str = "us-east-1"
-    bedrock_model_id: str = "us.amazon.nova-lite-v1:0"
+    aws_default_region: str = "ap-south-1"
+    bedrock_region: str = "ap-south-1"
+    bedrock_model_id: str = "meta.llama3-70b-instruct-v1:0"
 
     # LLM — set llm_provider="openai" to use OpenAI instead of Bedrock
     llm_provider: str = "bedrock"  # "bedrock" | "openai"
@@ -33,12 +34,10 @@ class Settings(BaseSettings):
     amazon_q_index_id: str = ""
 
     # LiveKit
-    livekit_url: str = ""           # e.g. wss://my-app.livekit.cloud
+    livekit_url: str = ""           # e.g. wss://my-app.livekit.cloud (internal)
+    livekit_public_url: str = ""    # public URL for browser clients
     livekit_api_key: str = ""
     livekit_api_secret: str = ""
-
-    # LLM model on Bedrock
-    llama_model_id: str = "us.meta.llama3-3-70b-instruct-v1:0"
 
     # Database
     database_url: str = "postgresql+asyncpg://gramvaani:gramvaani@localhost:5432/gramvaani"
