@@ -86,6 +86,14 @@ resource "aws_security_group" "gram_sathi" {
   }
 
   ingress {
+    description = "LiveKit ICE-TCP (WebRTC fallback)"
+    from_port   = 7881
+    to_port     = 7881
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "LiveKit media (RTP/UDP)"
     from_port   = 7882
     to_port     = 7882
