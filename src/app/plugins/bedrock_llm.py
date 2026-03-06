@@ -170,9 +170,21 @@ class _BedrockLLMStream(llm.LLMStream):
                 kwargs["toolConfig"] = {"tools": tool_specs}
 
         logger.info("[bedrock] calling converse: %d tools, %d messages", len(self._tools), len(messages))
-        response = await asyncio.get_event_loop().run_in_executor(
-            None, lambda k=kwargs: self._llm._client.converse(**k)
-        )
+        try:
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, lambda k=kwargs: self._llm._client.converse(**k)
+            )
+        except Exception as exc:
+            err_str = str(exc)
+            if "tool use" in err_str.lower() or "toolconfig" in err_str.lower():
+                # Model doesn't support tool use — retry without tools
+                logger.warning("[bedrock] model does not support tool use, retrying without toolConfig: %s", exc)
+                kwargs.pop("toolConfig", None)
+                response = await asyncio.get_event_loop().run_in_executor(
+                    None, lambda k=kwargs: self._llm._client.converse(**k)
+                )
+            else:
+                raise
         output_msg = response.get("output", {}).get("message", {})
         parts = output_msg.get("content", [])
         stop_reason = response.get("stopReason", "")
