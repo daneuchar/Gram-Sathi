@@ -16,3 +16,9 @@ variable "ssh_public_key_path" {
   type        = string
   default     = "~/.ssh/id_rsa.pub"
 }
+
+variable "ssh_private_key_path" {
+  description = "Path to the SSH private key used to connect to the instance (e.g. ~/.ssh/id_rsa)"
+  type        = string
+  default     = "~/.ssh/id_rsa"
+}
