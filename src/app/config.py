@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = ""
     aws_default_region: str = "ap-south-1"
     bedrock_region: str = "ap-south-1"
-    bedrock_model_id: str = "amazon.nova-2-lite-v1:0"
+    bedrock_model_id: str = "global.amazon.nova-2-lite-v1:0"
 
     # LLM — set llm_provider="openai" to use OpenAI instead of Bedrock
     llm_provider: str = "bedrock"  # "bedrock" | "openai"

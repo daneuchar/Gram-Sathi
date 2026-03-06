@@ -307,7 +307,7 @@ locals {
     printf '%s\n' \
       "AWS_DEFAULT_REGION=${var.region}" \
       "BEDROCK_REGION=ap-south-1" \
-      "BEDROCK_MODEL_ID=amazon.nova-2-lite-v1:0" \
+      "BEDROCK_MODEL_ID=global.amazon.nova-2-lite-v1:0" \
       "SARVAM_API_KEY=$SARVAM_KEY" \
       "DATA_GOV_API_KEY=$DATA_GOV_KEY" \
       "TWILIO_ACCOUNT_SID=$TWILIO_SID" \
