@@ -107,6 +107,11 @@ data "aws_iam_policy_document" "ssm_read" {
     actions   = ["ssm:GetParameter"]
     resources = ["arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/gram-sathi/*"]
   }
+
+  statement {
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${data.aws_caller_identity.current.account_id}:key/alias/aws/ssm"]
+  }
 }
 
 resource "aws_iam_role" "gram_sathi" {
@@ -172,9 +177,9 @@ resource "aws_ssm_parameter" "data_gov_api_key" {
 locals {
   user_data = <<-EOF
     #!/usr/bin/env bash
-    set -euo pipefail
     # All output logged — SSH and run: tail -f /var/log/gram-sathi-init.log
     exec > /var/log/gram-sathi-init.log 2>&1
+    set -euo pipefail
 
     echo "=== [1/6] Installing Docker and dependencies ==="
     apt-get update -qq
@@ -204,19 +209,19 @@ locals {
     PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 
     echo "=== [5/6] Writing .env ==="
-    cat > .env <<ENVEOF
-    AWS_DEFAULT_REGION=${var.region}
-    BEDROCK_MODEL_ID=us.meta.llama3-3-70b-instruct-v1:0
-    SARVAM_API_KEY=$SARVAM_KEY
-    DATA_GOV_API_KEY=$DATA_GOV_KEY
-    DATABASE_URL=postgresql+asyncpg://gramvaani:gramvaani@postgres:5432/gramvaani
-    LIVEKIT_URL=ws://livekit:7880
-    LIVEKIT_API_KEY=devkey
-    LIVEKIT_API_SECRET=secret
-    DEBUG=false
-    PUBLIC_URL=http://$PUBLIC_IP:8000
-    LIVEKIT_PUBLIC_URL=ws://$PUBLIC_IP:7880
-    ENVEOF
+    printf '%s\n' \
+      "AWS_DEFAULT_REGION=${var.region}" \
+      "BEDROCK_MODEL_ID=us.meta.llama3-3-70b-instruct-v1:0" \
+      "SARVAM_API_KEY=$SARVAM_KEY" \
+      "DATA_GOV_API_KEY=$DATA_GOV_KEY" \
+      "DATABASE_URL=postgresql+asyncpg://gramvaani:gramvaani@postgres:5432/gramvaani" \
+      "LIVEKIT_URL=ws://livekit:7880" \
+      "LIVEKIT_API_KEY=devkey" \
+      "LIVEKIT_API_SECRET=secret" \
+      "DEBUG=false" \
+      "PUBLIC_URL=http://$PUBLIC_IP:8000" \
+      "LIVEKIT_PUBLIC_URL=ws://$PUBLIC_IP:7880" \
+      > .env
 
     echo "=== [6/6] Running deploy.sh ==="
     bash deploy.sh
