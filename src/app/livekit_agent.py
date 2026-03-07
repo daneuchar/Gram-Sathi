@@ -287,6 +287,10 @@ async def entrypoint(ctx: JobContext) -> None:
             phone = participant.metadata or ""
         except (TimeoutError, asyncio.TimeoutError):
             pass
+    # Normalize phone: ensure it starts with +
+    phone = phone.strip()
+    if phone and not phone.startswith("+"):
+        phone = "+" + phone
     logger.info("[entrypoint] resolved phone=%s", phone)
     user = await get_or_create_user(phone) if phone else None
     profile = {"name": user.name, "state": user.state, "district": user.district, "language": user.language, "crops": user.crops, "land_acres": user.land_acres} if user and user.name else None
