@@ -109,6 +109,30 @@ resource "aws_security_group" "gram_sathi" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "SIP signaling (UDP)"
+    from_port   = 5060
+    to_port     = 5060
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "SIP signaling (TCP)"
+    from_port   = 5060
+    to_port     = 5060
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "RTP media"
+    from_port   = 10000
+    to_port     = 20000
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
