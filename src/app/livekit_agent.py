@@ -490,7 +490,17 @@ async def entrypoint(ctx: JobContext) -> None:
     await session.start(agent=agent, room=ctx.room)
 
     # Proactive greeting — agent speaks first without waiting for farmer
-    session.generate_reply()
+    # For SIP callbacks, the agent is in the room before the farmer picks up,
+    # so we wait for the farmer (SIP participant) to connect before greeting.
+    is_sip_callback = ctx.room.name.startswith("gram-saathi-callback-")
+    if is_sip_callback:
+        @ctx.room.on("participant_connected")
+        def _on_farmer_connected(participant):
+            logger.info("[greeting] farmer connected: %s, generating greeting", participant.identity)
+            session.generate_reply()
+    else:
+        # Web/test calls — participant is already connected, greet immediately
+        session.generate_reply()
 
 
 if __name__ == "__main__":
