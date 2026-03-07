@@ -487,20 +487,29 @@ async def entrypoint(ctx: JobContext) -> None:
     def on_disconnected():
         asyncio.create_task(_finalize_call_log())
 
+    # For SIP callbacks, the agent joins the room BEFORE the farmer is dialed.
+    # Delay session.start() until the farmer connects, so the STT stream
+    # doesn't waste its ~70s Sarvam timeout waiting for the farmer to pick up.
+    is_sip_callback = ctx.room.name.startswith("gram-saathi-callback-")
+    if is_sip_callback:
+        farmer_connected = asyncio.Event()
+
+        @ctx.room.on("participant_connected")
+        def _on_farmer_connected(participant):
+            logger.info("[sip-callback] farmer connected: %s", participant.identity)
+            farmer_connected.set()
+
+        logger.info("[sip-callback] waiting for farmer to connect before starting session...")
+        try:
+            await asyncio.wait_for(farmer_connected.wait(), timeout=60)
+        except (TimeoutError, asyncio.TimeoutError):
+            logger.warning("[sip-callback] farmer never connected, aborting")
+            return
+
     await session.start(agent=agent, room=ctx.room)
 
     # Proactive greeting — agent speaks first without waiting for farmer
-    # For SIP callbacks, the agent is in the room before the farmer picks up,
-    # so we wait for the farmer (SIP participant) to connect before greeting.
-    is_sip_callback = ctx.room.name.startswith("gram-saathi-callback-")
-    if is_sip_callback:
-        @ctx.room.on("participant_connected")
-        def _on_farmer_connected(participant):
-            logger.info("[greeting] farmer connected: %s, generating greeting", participant.identity)
-            session.generate_reply()
-    else:
-        # Web/test calls — participant is already connected, greet immediately
-        session.generate_reply()
+    session.generate_reply()
 
 
 if __name__ == "__main__":
