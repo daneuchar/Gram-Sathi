@@ -1,4 +1,6 @@
 port: 7880
+redis:
+  address: redis:6379
 rtc:
   port_range_start: 10000
   port_range_end: 20000
