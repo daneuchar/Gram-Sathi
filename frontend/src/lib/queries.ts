@@ -63,11 +63,12 @@ export function useAnalytics() {
   });
 }
 
-export function useTranscript(callSid: string | null) {
+export function useTranscript(callSid: string | null, isLive = false) {
   return useQuery<TranscriptResponse>({
     queryKey: ["transcript", callSid],
     queryFn: () => apiFetch(`/api/dashboard/calls/${callSid}/transcript`),
     enabled: !!callSid,
+    refetchInterval: isLive ? 2_000 : false,
   });
 }
 

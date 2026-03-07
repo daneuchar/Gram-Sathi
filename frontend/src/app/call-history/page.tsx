@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCalls, useTranscript, useTranslate } from "@/lib/queries";
 import { formatDate, formatDuration } from "@/lib/format";
 import type { Call } from "@/lib/types";
@@ -66,9 +66,12 @@ export default function CallHistoryPage() {
 
   // Transcript drawer state
   const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+  const isLive = selectedCall?.status === "in-progress";
   const { data: transcriptData, isLoading: transcriptLoading } = useTranscript(
-    selectedCall?.call_sid ?? null
+    selectedCall?.call_sid ?? null,
+    isLive
   );
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Translation state
   const [showTranslation, setShowTranslation] = useState(false);
@@ -80,6 +83,13 @@ export default function CallHistoryPage() {
     setShowTranslation(false);
     setTranslations({});
   }, [selectedCall?.call_sid]);
+
+  // Auto-scroll to bottom when new turns arrive during live calls
+  useEffect(() => {
+    if (isLive && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isLive, transcriptData?.turns.length]);
 
   const isEnglish = selectedCall?.language_detected === "en-IN";
 
@@ -291,7 +301,18 @@ export default function CallHistoryPage() {
       >
         <SheetContent side="right" className="sm:max-w-md w-full flex flex-col">
           <SheetHeader className="border-b pb-4 pr-10">
-            <SheetTitle>Conversation Transcript</SheetTitle>
+            <SheetTitle className="flex items-center gap-2">
+              Conversation Transcript
+              {isLive && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                  </span>
+                  Live
+                </span>
+              )}
+            </SheetTitle>
             {selectedCall && (
               <SheetDescription asChild>
                 <div className="flex flex-wrap gap-2 text-xs">
@@ -401,6 +422,7 @@ export default function CallHistoryPage() {
                   </div>
                 );
               })}
+            <div ref={chatEndRef} />
           </div>
         </SheetContent>
       </Sheet>
