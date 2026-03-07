@@ -241,6 +241,7 @@ def build_system_prompt(profile: dict | None) -> str:
     """Return main system prompt with profile context, or onboarding prompt."""
     if profile is None:
         return ONBOARDING_PROMPT
+    today = datetime.now().strftime("%B %d, %Y")
     name = profile.get("name", "")
     state = profile.get("state", "")
     district = profile.get("district", "")
@@ -254,6 +255,7 @@ def build_system_prompt(profile: dict | None) -> str:
         "od-IN": "Odia", "en-IN": "English",
     }.get(lang, "English")
     profile_ctx = (
+        f"Today's date: {today}. "
         f"Farmer profile — Name: {name}, State: {state}, District: {district}, "
         f"Crops: {crops or 'unknown'}, Land: {land_acres or 'unknown'} acres, Language: {lang_name}. "
         f"Respond in {lang_name}. "
