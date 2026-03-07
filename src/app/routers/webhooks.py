@@ -66,6 +66,11 @@ async def _callback_farmer(phone: str) -> None:
     # Small delay so Twilio fully processes the rejected call
     await asyncio.sleep(2)
 
+    # Normalize phone: ensure it starts with +  (+ may be URL-decoded to space)
+    phone = phone.strip()
+    if not phone.startswith("+"):
+        phone = "+" + phone
+
     room_name = f"gram-saathi-callback-{int(time.time())}-{uuid.uuid4().hex[:6]}"
     livekit_url = settings.livekit_url or "ws://localhost:7880"
 
