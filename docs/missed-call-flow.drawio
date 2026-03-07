@@ -498,7 +498,7 @@
         <mxCell id="WZinHEruIRM54mhMWpV9-78" connectable="0" parent="1" style="group" value="" vertex="1">
           <mxGeometry height="70" width="800" x="370" y="10" as="geometry" />
         </mxCell>
-        <mxCell id="WZinHEruIRM54mhMWpV9-79" parent="WZinHEruIRM54mhMWpV9-78" style="text;html=1;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a2e;" value="Gram Sathi — System Architecture" vertex="1">
+        <mxCell id="WZinHEruIRM54mhMWpV9-79" parent="WZinHEruIRM54mhMWpV9-78" style="text;html=1;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a2e;" value="Gram Saathi — System Architecture" vertex="1">
           <mxGeometry height="50" width="800" as="geometry" />
         </mxCell>
         <mxCell id="WZinHEruIRM54mhMWpV9-80" parent="WZinHEruIRM54mhMWpV9-78" style="text;html=1;fontSize=13;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#666666;" value="Voice AI Assistant for Indian Farmers  |  Single EC2 Deployment (t3.medium, ap-south-1)" vertex="1">

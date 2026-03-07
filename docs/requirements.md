@@ -1,4 +1,4 @@
-# Gram Sathi — Requirements
+# Gram Saathi — Requirements
 
 ## Problem
 
@@ -6,7 +6,7 @@
 
 ## Solution
 
-Gram Sathi: one missed call (₹0) triggers an AI voice callback delivering live market prices, weather forecasts, government scheme eligibility, and crop advice — in the farmer's own language, on any phone.
+Gram Saathi: one missed call (₹0) triggers an AI voice callback delivering live market prices, weather forecasts, government scheme eligibility, and crop advice — in the farmer's own language, on any phone.
 
 ## Functional Requirements
 

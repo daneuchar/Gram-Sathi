@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Deploy Gram Sathi on a fresh Ubuntu EC2 instance (t3.medium, ap-south-1)
+# Deploy Gram Saathi on a fresh Ubuntu EC2 instance (t3.medium, ap-south-1)
 # Usage: ssh into EC2, then: curl -sL <raw-github-url>/deploy.sh | bash
 #   OR: git clone the repo and run ./deploy.sh
 
 set -euo pipefail
 
-echo "=== Gram Sathi — EC2 Deployment ==="
+echo "=== Gram Saathi — EC2 Deployment ==="
 
 # 1. Install Docker if not present
 if ! command -v docker &>/dev/null; then

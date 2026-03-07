@@ -1,4 +1,4 @@
-# Gram Sathi — Design Document
+# Gram Saathi — Design Document
 
 ## Architecture Overview
 

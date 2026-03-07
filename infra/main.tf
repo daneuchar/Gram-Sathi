@@ -47,7 +47,7 @@ resource "aws_key_pair" "gram_sathi" {
 # Security Group
 resource "aws_security_group" "gram_sathi" {
   name        = "gram-sathi-sg"
-  description = "Gram Sathi EC2 - allow dashboard, backend, LiveKit, SSH"
+  description = "Gram Saathi EC2 - allow dashboard, backend, LiveKit, SSH"
 
   ingress {
     description = "HTTP for nginx and Certbot"

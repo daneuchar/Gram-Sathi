@@ -1,4 +1,4 @@
-# Gram Sathi — Terraform Infrastructure Design
+# Gram Saathi — Terraform Infrastructure Design
 
 **Date:** 2026-03-05
 **Scope:** Single EC2 deployment on AWS (ap-south-1), fully automated boot via SSM Parameter Store

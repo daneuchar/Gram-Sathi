@@ -1,4 +1,4 @@
-# Gram Sathi — AWS Deployment Guide
+# Gram Saathi — AWS Deployment Guide
 
 Single EC2 instance running all services via Docker Compose. Designed for demo/hackathon use (up to 5 concurrent users).
 

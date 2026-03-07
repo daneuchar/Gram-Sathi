@@ -1,8 +1,8 @@
-# Gram Sathi
+# Gram Saathi
 
 **Voice AI assistant for Indian farmers — one missed call, zero cost.**
 
-150M+ Indian farmers have no smartphone or internet. Gram Sathi bridges this gap: a farmer gives a missed call (₹0), gets an AI callback delivering live market prices, weather forecasts, government scheme eligibility, and crop advice — in their own language, on any phone.
+150M+ Indian farmers have no smartphone or internet. Gram Saathi bridges this gap: a farmer gives a missed call (₹0), gets an AI callback delivering live market prices, weather forecasts, government scheme eligibility, and crop advice — in their own language, on any phone.
 
 ## How It Works
 
