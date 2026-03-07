@@ -194,6 +194,19 @@ resource "aws_iam_role_policy" "bedrock_invoke" {
   policy = data.aws_iam_policy_document.bedrock_invoke.json
 }
 
+data "aws_iam_policy_document" "translate" {
+  statement {
+    actions   = ["translate:TranslateText"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "translate" {
+  name   = "gram-sathi-translate"
+  role   = aws_iam_role.gram_sathi.id
+  policy = data.aws_iam_policy_document.translate.json
+}
+
 resource "aws_iam_instance_profile" "gram_sathi" {
   name = "gram-sathi-instance-profile"
   role = aws_iam_role.gram_sathi.name
