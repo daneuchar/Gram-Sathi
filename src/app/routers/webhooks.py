@@ -92,7 +92,7 @@ async def _callback_farmer(phone: str) -> None:
                 await asyncio.sleep(0.5)
                 resp = await api.room.list_participants(ListParticipantsRequest(room=room_name))
                 for p in resp.participants:
-                    if p.kind == 1:  # AGENT participant kind
+                    if p.kind == 4:  # AGENT participant kind
                         agent_ready = True
                         break
                 if agent_ready:
