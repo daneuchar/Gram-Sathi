@@ -230,6 +230,8 @@ def build_system_prompt(profile: dict | None) -> str:
     name = profile.get("name", "")
     state = profile.get("state", "")
     district = profile.get("district", "")
+    crops = profile.get("crops", "")
+    land_acres = profile.get("land_acres")
     lang = profile.get("language", "en-IN")
     lang_name = {
         "hi-IN": "Hindi", "ta-IN": "Tamil", "te-IN": "Telugu",
@@ -238,13 +240,15 @@ def build_system_prompt(profile: dict | None) -> str:
         "od-IN": "Odia", "en-IN": "English",
     }.get(lang, "English")
     profile_ctx = (
-        f"Farmer profile — Name: {name}, State: {state}, District: {district}, Language: {lang_name}. "
+        f"Farmer profile — Name: {name}, State: {state}, District: {district}, "
+        f"Crops: {crops or 'unknown'}, Land: {land_acres or 'unknown'} acres, Language: {lang_name}. "
         f"Respond in {lang_name}. "
         f"Greet them by name ONLY on the very first turn. After that, do NOT use their name in every response. "
         f"Mix it up naturally — sometimes just answer directly, sometimes use respectful words like 'जी', 'हाँ', 'अच्छा', 'जी हाँ', 'बताती हूँ'. "
         f"Use their name only occasionally, like real phone conversations. "
         f"When the farmer asks about prices, weather, etc. WITHOUT specifying a location, default to {state}, {district}. "
-        f"But if they mention ANY other state, city, or district, use THAT location — do not restrict to {state}."
+        f"But if they mention ANY other state, city, or district, use THAT location — do not restrict to {state}. "
+        f"When checking scheme eligibility, use the farmer's profile data directly — do NOT ask the farmer for information you already have (state, crops, land size)."
     )
     return SYSTEM_PROMPT + "\n\n" + profile_ctx
 
@@ -269,7 +273,7 @@ async def entrypoint(ctx: JobContext) -> None:
             pass
     logger.info("[entrypoint] resolved phone=%s", phone)
     user = await get_or_create_user(phone) if phone else None
-    profile = {"name": user.name, "state": user.state, "district": user.district, "language": user.language} if user and user.name else None
+    profile = {"name": user.name, "state": user.state, "district": user.district, "language": user.language, "crops": user.crops, "land_acres": user.land_acres} if user and user.name else None
     language = (profile.get("language") or "en-IN") if profile else "en-IN"
     is_onboarding = profile is None
 
