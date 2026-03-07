@@ -426,6 +426,18 @@ async def entrypoint(ctx: JobContext) -> None:
                     )
                     logger.info("[onboarding] profile saved for %s: %s", phone, profile_data)
 
+                    # Update CallLog language now that we know it
+                    detected_lang = profile_data.get("language", "en-IN")
+                    try:
+                        async with AsyncSessionLocal() as db:
+                            log = await db.get(CallLog, call_sid)
+                            if log:
+                                log.language_detected = detected_lang
+                                await db.commit()
+                        logger.info("[onboarding] updated CallLog language to %s", detected_lang)
+                    except Exception:
+                        logger.exception("[onboarding] failed to update CallLog language")
+
                     # Switch from onboarding to main agent with tools
                     is_onboarding = False
                     new_prompt = build_system_prompt(profile_data)
