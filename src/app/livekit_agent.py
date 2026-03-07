@@ -161,6 +161,7 @@ def _is_tool_call_json(text: str) -> bool:
 
 _TTS_REPLACEMENTS = {
     "मंडी": "मण्डी",
+    "₹": "रुपये ",
 }
 
 
