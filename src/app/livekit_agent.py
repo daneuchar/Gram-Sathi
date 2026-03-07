@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 _MARKER_RE = re.compile(r'<<<[^>]*>>>')
 _THINKING_RE = re.compile(r'<thinking>.*?</thinking>\s*', re.DOTALL)
+_MARKDOWN_RE = re.compile(r'\*{1,2}([^*]+)\*{1,2}')  # **bold** or *italic* → text
 
 
 class OnboardingAgent(Agent):
@@ -158,6 +159,17 @@ def _is_tool_call_json(text: str) -> bool:
     return False
 
 
+def _clean_for_tts(text: str) -> str:
+    """Remove markdown formatting and other artifacts that break TTS."""
+    text = _MARKDOWN_RE.sub(r'\1', text)  # **bold** / *italic* → text
+    text = re.sub(r'^#{1,6}\s*', '', text, flags=re.MULTILINE)  # # headers
+    text = re.sub(r'[`~]{3,}.*', '', text)  # code fences
+    text = text.replace('`', '')  # inline code
+    text = re.sub(r'\n{2,}', '. ', text)  # double newlines → period
+    text = text.replace('\n', ' ')  # single newlines → space
+    return text.strip()
+
+
 async def _strip_markers(
     text: AsyncIterable[str], stt_plugin: sarvam.STT, tts_plugin: sarvam.TTS
 ) -> AsyncIterable[str]:
@@ -206,9 +218,10 @@ async def _strip_markers(
                 hold_idx = min(hold_idx, idx)
 
         if hold_idx > 0:
-            to_speak = buf[:hold_idx]
-            logger.debug("[tts_node] yielding to TTS: %s", to_speak[:150])
-            yield to_speak
+            to_speak = _clean_for_tts(buf[:hold_idx])
+            if to_speak:
+                logger.debug("[tts_node] yielding to TTS: %s", to_speak[:150])
+                yield to_speak
         buf = buf[hold_idx:]
 
     # Final cleanup of any remaining markers/thinking in buffer
@@ -218,6 +231,7 @@ async def _strip_markers(
     if buf and _is_tool_call_json(buf):
         logger.debug("[tts_node] stripping final tool call JSON: %s", buf[:120])
         buf = ""
+    buf = _clean_for_tts(buf)
     if buf:
         logger.debug("[tts_node] yielding final to TTS: %s", buf[:150])
         yield buf
