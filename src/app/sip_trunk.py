@@ -27,8 +27,8 @@ async def ensure_sip_trunk() -> str:
         logger.info("[sip] using pre-configured trunk: %s", _trunk_id)
         return _trunk_id
 
-    if not settings.twilio_account_sid or not settings.twilio_auth_token:
-        raise RuntimeError("[sip] TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN must be set for SIP trunk")
+    if not settings.twilio_sip_domain or not settings.twilio_phone_number:
+        raise RuntimeError("[sip] TWILIO_SIP_DOMAIN and TWILIO_PHONE_NUMBER must be set for SIP trunk")
 
     livekit_url = settings.livekit_url or "ws://localhost:7880"
 
@@ -46,8 +46,8 @@ async def ensure_sip_trunk() -> str:
                 return _trunk_id
 
         # Create new outbound trunk
-        # Twilio SIP domain format: <account-sid>.pstn.twilio.com
-        twilio_sip_address = f"{settings.twilio_account_sid}.pstn.twilio.com"
+        # Twilio Elastic SIP Trunking termination URI
+        twilio_sip_address = settings.twilio_sip_domain
 
         result = await api.sip.create_outbound_trunk(
             CreateSIPOutboundTrunkRequest(
@@ -55,8 +55,6 @@ async def ensure_sip_trunk() -> str:
                     name="twilio-gramvaani",
                     address=twilio_sip_address,
                     numbers=[settings.twilio_phone_number],
-                    auth_username=settings.twilio_account_sid,
-                    auth_password=settings.twilio_auth_token,
                 )
             )
         )
