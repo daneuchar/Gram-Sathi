@@ -1,0 +1,83 @@
+<mxfile host="app.diagrams.net" version="29.6.1">
+  <diagram name="Missed Call Detection" id="missed-call">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a2e;" value="Missed Call Detection &amp; Rejection" vertex="1">
+          <mxGeometry height="35" width="500" x="450" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontSize=12;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#666666;" value="Farmer pays ₹0 — call is rejected immediately, triggering an automated callback" vertex="1">
+          <mxGeometry height="25" width="600" x="400" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="farmer" parent="1" style="shape=mxgraph.basic.person;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;whiteSpace=wrap;" value="Farmer&#xa;(Any Phone)" vertex="1">
+          <mxGeometry height="120" width="100" x="80" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="twilio" parent="1" style="rounded=1;html=1;fillColor=#e6d0de;strokeColor=#996185;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="Twilio&#xa;Phone Number&#xa;+91-XXX-XXXX" vertex="1">
+          <mxGeometry height="90" width="200" x="350" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="nginx" parent="1" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;whiteSpace=wrap;arcSize=12;" value="Nginx&#xa;(gramsaathi.in)" vertex="1">
+          <mxGeometry height="70" width="160" x="700" y="225" as="geometry" />
+        </mxCell>
+        <mxCell id="backend" parent="1" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="FastAPI Backend&#xa;POST /webhooks/missed-call" vertex="1">
+          <mxGeometry height="90" width="250" x="1010" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="step1" edge="1" parent="1" source="farmer" target="twilio" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step1_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontColor=#333333;" value="① Farmer Dials" vertex="1">
+          <mxGeometry height="28" width="120" x="195" y="222" as="geometry" />
+        </mxCell>
+        <mxCell id="step2" edge="1" parent="1" source="twilio" target="nginx" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#996185;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step2_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#e6d0de;strokeColor=#996185;rounded=1;fontColor=#333333;" value="② Webhook POST" vertex="1">
+          <mxGeometry height="28" width="140" x="575" y="228" as="geometry" />
+        </mxCell>
+        <mxCell id="step3" edge="1" parent="1" source="nginx" target="backend" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step3_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#f5f5f5;strokeColor=#666666;rounded=1;fontColor=#333333;" value="③ Proxy to :8000" vertex="1">
+          <mxGeometry height="28" width="140" x="880" y="228" as="geometry" />
+        </mxCell>
+        <mxCell id="reject_box" parent="1" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;whiteSpace=wrap;arcSize=12;" value="④ Responds with TwiML:&#xa;&lt;Reject reason=&quot;busy&quot;/&gt;" vertex="1">
+          <mxGeometry height="70" width="250" x="1010" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="step4" edge="1" parent="1" source="backend" target="reject_box" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step5_back" edge="1" parent="1" source="reject_box" target="twilio" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=0;exitY=0.5;entryX=0.5;entryY=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="405" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="step5_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;fontColor=#333333;" value="⑤ Reject Response" vertex="1">
+          <mxGeometry height="28" width="140" x="620" y="391" as="geometry" />
+        </mxCell>
+        <mxCell id="step6" edge="1" parent="1" source="twilio" target="farmer" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=0;exitY=0.7;entryX=1;entryY=0.7;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="step6_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;fontColor=#333333;" value="⑥ Call Ends (₹0)" vertex="1">
+          <mxGeometry height="28" width="140" x="195" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="async_label" parent="1" style="text;html=1;fontSize=12;fontStyle=2;align=center;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;fontColor=#333333;" value="Meanwhile: Backend triggers async callback (see Callback Flow diagram)" vertex="1">
+          <mxGeometry height="30" width="470" x="1010" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="1" style="swimlane;html=1;startSize=0;fillColor=#fafafa;strokeColor=#cccccc;rounded=1;" value="" vertex="1">
+          <mxGeometry height="75" width="1200" x="80" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_title" parent="legend" style="text;html=1;fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;" value="Summary:" vertex="1">
+          <mxGeometry height="22" width="100" x="10" y="5" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_text" parent="legend" style="text;html=1;fontSize=11;align=left;fillColor=none;strokeColor=none;fontColor=#333333;whiteSpace=wrap;" value="① Farmer dials Twilio number  →  ② Twilio sends HTTP POST to gramsaathi.in/webhooks/missed-call  →  ③ Nginx proxies to FastAPI backend  →  ④ Backend responds with &lt;Reject reason=&quot;busy&quot;/&gt;  →  ⑤ Twilio receives reject  →  ⑥ Call ends immediately (farmer pays ₹0)" vertex="1">
+          <mxGeometry height="25" width="1170" x="10" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_note" parent="legend" style="text;html=1;fontSize=10;align=left;fillColor=none;strokeColor=none;fontColor=#82b366;fontStyle=1;" value="The backend simultaneously fires an async task to call the farmer back via SIP (see callback-flow.drawio)" vertex="1">
+          <mxGeometry height="20" width="700" x="10" y="52" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
