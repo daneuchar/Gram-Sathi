@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 _MARKER_RE = re.compile(r'<<<[^>]*>>>')
 _THINKING_RE = re.compile(r'<thinking>.*?</thinking>\s*', re.DOTALL)
+_MARKDOWN_RE = re.compile(r'\*{1,2}([^*]+)\*{1,2}')  # **bold** or *italic* → text
 
 
 class OnboardingAgent(Agent):
@@ -158,6 +159,25 @@ def _is_tool_call_json(text: str) -> bool:
     return False
 
 
+_TTS_REPLACEMENTS = {
+    "मंडी": "मण्डी",
+    "₹": "रुपये ",
+}
+
+
+def _clean_for_tts(text: str) -> str:
+    """Remove markdown formatting and fix TTS pronunciation issues."""
+    text = _MARKDOWN_RE.sub(r'\1', text)  # **bold** / *italic* → text
+    text = re.sub(r'^#{1,6}\s*', '', text, flags=re.MULTILINE)  # # headers
+    text = re.sub(r'[`~]{3,}.*', '', text)  # code fences
+    text = text.replace('`', '')  # inline code
+    text = re.sub(r'\n{2,}', '. ', text)  # double newlines → period
+    text = text.replace('\n', ' ')  # single newlines → space
+    for wrong, right in _TTS_REPLACEMENTS.items():
+        text = text.replace(wrong, right)
+    return text.strip()
+
+
 async def _strip_markers(
     text: AsyncIterable[str], stt_plugin: sarvam.STT, tts_plugin: sarvam.TTS
 ) -> AsyncIterable[str]:
@@ -206,9 +226,10 @@ async def _strip_markers(
                 hold_idx = min(hold_idx, idx)
 
         if hold_idx > 0:
-            to_speak = buf[:hold_idx]
-            logger.debug("[tts_node] yielding to TTS: %s", to_speak[:150])
-            yield to_speak
+            to_speak = _clean_for_tts(buf[:hold_idx])
+            if to_speak:
+                logger.debug("[tts_node] yielding to TTS: %s", to_speak[:150])
+                yield to_speak
         buf = buf[hold_idx:]
 
     # Final cleanup of any remaining markers/thinking in buffer
@@ -218,6 +239,7 @@ async def _strip_markers(
     if buf and _is_tool_call_json(buf):
         logger.debug("[tts_node] stripping final tool call JSON: %s", buf[:120])
         buf = ""
+    buf = _clean_for_tts(buf)
     if buf:
         logger.debug("[tts_node] yielding final to TTS: %s", buf[:150])
         yield buf
@@ -227,9 +249,12 @@ def build_system_prompt(profile: dict | None) -> str:
     """Return main system prompt with profile context, or onboarding prompt."""
     if profile is None:
         return ONBOARDING_PROMPT
+    today = datetime.now().strftime("%B %d, %Y")
     name = profile.get("name", "")
     state = profile.get("state", "")
     district = profile.get("district", "")
+    crops = profile.get("crops", "")
+    land_acres = profile.get("land_acres")
     lang = profile.get("language", "en-IN")
     lang_name = {
         "hi-IN": "Hindi", "ta-IN": "Tamil", "te-IN": "Telugu",
@@ -238,13 +263,16 @@ def build_system_prompt(profile: dict | None) -> str:
         "od-IN": "Odia", "en-IN": "English",
     }.get(lang, "English")
     profile_ctx = (
-        f"Farmer profile — Name: {name}, State: {state}, District: {district}, Language: {lang_name}. "
+        f"Today's date: {today}. "
+        f"Farmer profile — Name: {name}, State: {state}, District: {district}, "
+        f"Crops: {crops or 'unknown'}, Land: {land_acres or 'unknown'} acres, Language: {lang_name}. "
         f"Respond in {lang_name}. "
         f"Greet them by name ONLY on the very first turn. After that, do NOT use their name in every response. "
         f"Mix it up naturally — sometimes just answer directly, sometimes use respectful words like 'जी', 'हाँ', 'अच्छा', 'जी हाँ', 'बताती हूँ'. "
         f"Use their name only occasionally, like real phone conversations. "
         f"When the farmer asks about prices, weather, etc. WITHOUT specifying a location, default to {state}, {district}. "
-        f"But if they mention ANY other state, city, or district, use THAT location — do not restrict to {state}."
+        f"But if they mention ANY other state, city, or district, use THAT location — do not restrict to {state}. "
+        f"When checking scheme eligibility, use the farmer's profile data directly — do NOT ask the farmer for information you already have (state, crops, land size)."
     )
     return SYSTEM_PROMPT + "\n\n" + profile_ctx
 
@@ -267,9 +295,13 @@ async def entrypoint(ctx: JobContext) -> None:
             phone = participant.metadata or ""
         except (TimeoutError, asyncio.TimeoutError):
             pass
+    # Normalize phone: ensure it starts with +
+    phone = phone.strip()
+    if phone and not phone.startswith("+"):
+        phone = "+" + phone
     logger.info("[entrypoint] resolved phone=%s", phone)
     user = await get_or_create_user(phone) if phone else None
-    profile = {"name": user.name, "state": user.state, "district": user.district, "language": user.language} if user and user.name else None
+    profile = {"name": user.name, "state": user.state, "district": user.district, "language": user.language, "crops": user.crops, "land_acres": user.land_acres} if user and user.name else None
     language = (profile.get("language") or "en-IN") if profile else "en-IN"
     is_onboarding = profile is None
 
@@ -280,12 +312,15 @@ async def entrypoint(ctx: JobContext) -> None:
         api_key=settings.sarvam_api_key,
     )
 
-    # TTS: Sarvam bulbul with female voice
+    # TTS: Sarvam bulbul with female voice (8kHz for SIP/phone calls)
     tts_plugin = sarvam.TTS(
         model="bulbul:v3",
         target_language_code=language,
-        speaker="priya",
+        speaker="ishita",
         api_key=settings.sarvam_api_key,
+        max_chunk_length=500,
+        pace=1.1,
+        speech_sample_rate=8000,
     )
 
     common_kwargs = dict(
@@ -426,6 +461,18 @@ async def entrypoint(ctx: JobContext) -> None:
                     )
                     logger.info("[onboarding] profile saved for %s: %s", phone, profile_data)
 
+                    # Update CallLog language now that we know it
+                    detected_lang = profile_data.get("language", "en-IN")
+                    try:
+                        async with AsyncSessionLocal() as db:
+                            log = await db.get(CallLog, call_sid)
+                            if log:
+                                log.language_detected = detected_lang
+                                await db.commit()
+                        logger.info("[onboarding] updated CallLog language to %s", detected_lang)
+                    except Exception:
+                        logger.exception("[onboarding] failed to update CallLog language")
+
                     # Switch from onboarding to main agent with tools
                     is_onboarding = False
                     new_prompt = build_system_prompt(profile_data)
@@ -471,7 +518,37 @@ async def entrypoint(ctx: JobContext) -> None:
     def on_disconnected():
         asyncio.create_task(_finalize_call_log())
 
+    # For SIP callbacks, the agent joins the room BEFORE the farmer is dialed.
+    # Delay session.start() until the farmer connects, so the STT stream
+    # doesn't waste its ~70s Sarvam timeout waiting for the farmer to pick up.
+    is_sip_callback = ctx.room.name.startswith("gram-saathi-callback-")
+    if is_sip_callback:
+        # Check if a non-agent participant is already connected
+        farmer_already_here = any(
+            p.kind != rtc.ParticipantKind.PARTICIPANT_KIND_AGENT
+            for p in ctx.room.remote_participants.values()
+        )
+        if not farmer_already_here:
+            farmer_connected = asyncio.Event()
+
+            @ctx.room.on("participant_connected")
+            def _on_farmer_connected(participant):
+                logger.info("[sip-callback] farmer connected: %s", participant.identity)
+                farmer_connected.set()
+
+            logger.info("[sip-callback] waiting for farmer to connect before starting session...")
+            try:
+                await asyncio.wait_for(farmer_connected.wait(), timeout=60)
+            except (TimeoutError, asyncio.TimeoutError):
+                logger.warning("[sip-callback] farmer never connected, aborting")
+                return
+        else:
+            logger.info("[sip-callback] farmer already in room, starting immediately")
+
     await session.start(agent=agent, room=ctx.room)
+
+    # Proactive greeting — agent speaks first without waiting for farmer
+    session.generate_reply()
 
 
 if __name__ == "__main__":

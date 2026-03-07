@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.6.1">
   <diagram name="Gram Sathi Architecture" id="arch">
-    <mxGraphModel dx="1371" dy="920" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1400" math="0" shadow="0">
+    <mxGraphModel dx="1299" dy="872" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1400" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -37,7 +37,9 @@
           <mxGeometry height="28" width="280" x="15" y="142" as="geometry" />
         </mxCell>
         <mxCell id="agent" parent="ec2" style="swimlane;html=1;startSize=28;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;rounded=1;arcSize=8;" value="LiveKit Agent Worker  (Voice Pipeline)" vertex="1">
-          <mxGeometry height="270" width="600" x="30" y="305" as="geometry" />
+          <mxGeometry height="270" width="600" x="30" y="305" as="geometry">
+            <mxRectangle height="30" width="240" x="30" y="305" as="alternateBounds" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="onboard" parent="agent" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;whiteSpace=wrap;" value="OnboardingAgent&#xa;(first-time callers)" vertex="1">
           <mxGeometry height="44" width="160" x="20" y="40" as="geometry" />
@@ -51,7 +53,7 @@
         <mxCell id="stt_box" parent="agent" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;whiteSpace=wrap;" value="Sarvam STT&#xa;saaras:v3" vertex="1">
           <mxGeometry height="50" width="140" x="20" y="110" as="geometry" />
         </mxCell>
-        <mxCell id="llm_box" parent="agent" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;whiteSpace=wrap;" value="Bedrock LLM&#xa;Llama 3.3 70B" vertex="1">
+        <mxCell id="llm_box" parent="agent" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;whiteSpace=wrap;" value="Bedrock LLM&lt;br&gt;Nova Lite 2" vertex="1">
           <mxGeometry height="50" width="150" x="210" y="110" as="geometry" />
         </mxCell>
         <mxCell id="tts_box" parent="agent" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;whiteSpace=wrap;" value="Sarvam TTS&#xa;bulbul:v3 (priya)" vertex="1">
@@ -85,7 +87,7 @@
           <mxGeometry height="28" width="140" x="20" y="237" as="geometry" />
         </mxCell>
         <mxCell id="backend" parent="ec2" style="swimlane;html=1;startSize=28;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;rounded=1;arcSize=8;" value="FastAPI Backend  :8000" vertex="1">
-          <mxGeometry height="130" width="460" x="560" y="647" as="geometry">
+          <mxGeometry height="130" width="435" x="585" y="647" as="geometry">
             <mxRectangle height="30" width="170" x="560" y="647" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
@@ -102,7 +104,7 @@
           <mxGeometry height="28" width="100" x="15" y="94" as="geometry" />
         </mxCell>
         <mxCell id="postgres" parent="ec2" style="shape=cylinder3;html=1;size=12;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;whiteSpace=wrap;" value="PostgreSQL&#xa;:5432" vertex="1">
-          <mxGeometry height="90" width="140" x="760" y="120" as="geometry" />
+          <mxGeometry height="90" width="140" x="765" y="120" as="geometry" />
         </mxCell>
         <mxCell id="frontend" parent="ec2" style="swimlane;html=1;startSize=28;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;rounded=1;arcSize=8;" value="Next.js Dashboard  :3000" vertex="1">
           <mxGeometry height="270" width="310" x="100" y="590" as="geometry" />
@@ -136,10 +138,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="c_agent_pg" edge="1" parent="ec2" source="agent" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=1;dashed=1;fontSize=10;fontColor=#666666;exitX=1;exitY=0.4;entryX=0;entryY=0.5;" target="postgres" value="async writes">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="c_be_pg" edge="1" parent="ec2" source="pg_tables" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=1;dashed=1;fontSize=10;fontColor=#666666;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" target="postgres" value="queries">
+        <mxCell id="c_agent_pg" edge="1" parent="ec2" source="agent" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#9673a6;strokeWidth=2;fontSize=10;fontColor=#666666;exitX=0.75;exitY=0;entryX=0;entryY=0.5;exitDx=0;exitDy=0;fillColor=#e1d5e7;" target="postgres" value="async writes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="c_fe_be" edge="1" parent="ec2" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#6c8ebf;strokeWidth=1;fontSize=10;fontColor=#666666;entryX=0;entryY=0.5;" target="backend" value="REST API">
@@ -147,14 +146,20 @@
             <mxPoint x="410" y="712" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="-AuSqBnvi0vGflEP03yJ-1" edge="1" parent="ec2" source="backend" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=1;dashed=1;fontSize=10;fontColor=#666666;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" target="pg_tables" value="">
+        <mxCell id="-AuSqBnvi0vGflEP03yJ-1" edge="1" parent="ec2" source="ERZ_pHLk_EQRTL_JJQyJ-2" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=2;dashed=1;fontSize=10;fontColor=#666666;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="postgres" value="">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1040" y="757" as="sourcePoint" />
-            <mxPoint x="1070" y="370" as="targetPoint" />
+            <mxPoint x="830" y="220" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="pg_tables" parent="ec2" style="text;html=1;fontSize=10;align=center;fillColor=none;strokeColor=none;fontColor=#666666;whiteSpace=wrap;" value="users  |  call_logs  |  conversation_turns" vertex="1">
-          <mxGeometry height="20" width="250" x="710" y="290" as="geometry" />
+        <mxCell id="ERZ_pHLk_EQRTL_JJQyJ-3" edge="1" parent="ec2" source="backend" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=2;dashed=1;fontSize=10;fontColor=#666666;exitX=0.544;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="ERZ_pHLk_EQRTL_JJQyJ-2" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1085" y="757" as="sourcePoint" />
+            <mxPoint x="1085" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ERZ_pHLk_EQRTL_JJQyJ-2" parent="ec2" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b style=&quot;color: rgb(102, 102, 102); font-size: 10px;&quot;&gt;Users Profile&lt;/b&gt;&lt;b style=&quot;color: rgb(102, 102, 102); font-size: 10px;&quot;&gt;&lt;br&gt;Call Logs&amp;nbsp;&lt;/b&gt;&lt;br style=&quot;color: rgb(102, 102, 102); font-size: 10px;&quot;&gt;&lt;b style=&quot;color: rgb(102, 102, 102); font-size: 10px;&quot;&gt;Conversation Transcripts&lt;/b&gt;" vertex="1">
+          <mxGeometry height="47" width="200" x="735" y="560" as="geometry" />
         </mxCell>
         <mxCell id="ext_label" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#333333;" value="External APIs" vertex="1">
           <mxGeometry height="35" width="200" x="1500" y="120" as="geometry" />

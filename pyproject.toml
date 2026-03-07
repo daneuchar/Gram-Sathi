@@ -28,6 +28,7 @@ dependencies = [
     "livekit-api~=1.0",
     "openai>=2.24.0",
     "livekit-plugins-aws>=1.4.4",
+    "twilio>=9.10.2",
 ]
 
 [project.optional-dependencies]

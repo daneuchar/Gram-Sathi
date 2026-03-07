@@ -1,0 +1,10 @@
+port: 7880
+redis:
+  address: redis:6379
+rtc:
+  port_range_start: 10000
+  port_range_end: 20000
+  use_external_ip: true
+sip: {}
+keys:
+  devkey: secret

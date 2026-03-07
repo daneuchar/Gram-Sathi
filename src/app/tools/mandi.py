@@ -53,7 +53,49 @@ def _records_to_result(records: list[dict], commodity: str, state: str) -> dict:
     return {"prices": results}
 
 
+_COMMODITY_ALIASES = {
+    "sorghum": "Jowar(Sorghum)",
+    "jowar": "Jowar(Sorghum)",
+    "millet": "Bajra(Pearl Millet)",
+    "bajra": "Bajra(Pearl Millet)",
+    "pearl millet": "Bajra(Pearl Millet)",
+    "maize": "Maize",
+    "wheat": "Wheat",
+    "rice": "Rice",
+    "paddy": "Paddy(Dhan)(Common)",
+    "tomato": "Tomato",
+    "onion": "Onion",
+    "potato": "Potato",
+    "mustard": "Mustard",
+    "cotton": "Cotton",
+    "sugarcane": "Sugarcane",
+    "groundnut": "Groundnut",
+    "soyabean": "Soyabean",
+    "soybean": "Soyabean",
+    "chana": "Bengal Gram(Gram)(Whole)",
+    "gram": "Bengal Gram(Gram)(Whole)",
+    "chickpea": "Bengal Gram(Gram)(Whole)",
+    "moong": "Green Gram (Moong)(Whole)",
+    "urad": "Black Gram (Urd Beans)(Whole)",
+    "arhar": "Arhar (Tur/Red Gram)(Whole)",
+    "tur": "Arhar (Tur/Red Gram)(Whole)",
+    "lentil": "Masoor Dal",
+    "masoor": "Masoor Dal",
+    "garlic": "Garlic",
+    "ginger": "Ginger(Dry)",
+    "brinjal": "Brinjal",
+    "cauliflower": "Cauliflower",
+    "cabbage": "Cabbage",
+    "carrot": "Carrot",
+    "peas": "Peas(Green)",
+    "banana": "Banana",
+    "apple": "Apple",
+    "mango": "Mango",
+}
+
+
 def get_mandi_prices(commodity: str, state: str, district: str | None = None) -> dict:
+    commodity = _COMMODITY_ALIASES.get(commodity.lower(), commodity)
     cache_key = f"mandi:{commodity}:{state}:{district or 'all'}"
     cached = cache_get(cache_key)
     if cached is not None:
