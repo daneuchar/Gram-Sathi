@@ -11,6 +11,7 @@ from livekit.api import (
     LiveKitAPI,
     CreateRoomRequest,
     CreateSIPParticipantRequest,
+    ListParticipantsRequest,
     RoomAgentDispatch,
 )
 
@@ -61,7 +62,7 @@ async def missed_call(request: Request):
 
 
 async def _callback_farmer(phone: str) -> None:
-    """Create a LiveKit room and dial the farmer back via SIP."""
+    """Create a LiveKit room, wait for agent to be ready, then dial the farmer."""
     # Small delay so Twilio fully processes the rejected call
     await asyncio.sleep(2)
 
@@ -76,7 +77,7 @@ async def _callback_farmer(phone: str) -> None:
             api_key=settings.livekit_api_key,
             api_secret=settings.livekit_api_secret,
         ) as api:
-            # Create room with agent dispatch
+            # Step 1: Create room with agent dispatch
             await api.room.create_room(CreateRoomRequest(
                 name=room_name,
                 empty_timeout=300,
@@ -85,7 +86,24 @@ async def _callback_farmer(phone: str) -> None:
             ))
             logger.info("[callback] room created: %s", room_name)
 
-            # Create SIP participant — LiveKit dials the farmer via Twilio
+            # Step 2: Wait for agent to join the room before dialing
+            agent_ready = False
+            for _ in range(20):  # Poll for up to 10 seconds
+                await asyncio.sleep(0.5)
+                resp = await api.room.list_participants(ListParticipantsRequest(room=room_name))
+                for p in resp.participants:
+                    if p.kind == 1:  # AGENT participant kind
+                        agent_ready = True
+                        break
+                if agent_ready:
+                    break
+
+            if agent_ready:
+                logger.info("[callback] agent is ready in room %s, dialing farmer", room_name)
+            else:
+                logger.warning("[callback] agent not ready after 10s, dialing anyway")
+
+            # Step 3: Dial the farmer via SIP
             sip_info = await api.sip.create_sip_participant(
                 CreateSIPParticipantRequest(
                     sip_trunk_id=trunk_id,
