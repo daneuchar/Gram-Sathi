@@ -256,23 +256,59 @@ def build_system_prompt(profile: dict | None) -> str:
     crops = profile.get("crops", "")
     land_acres = profile.get("land_acres")
     lang = profile.get("language", "en-IN")
-    lang_name = {
+    lang_map = {
         "hi-IN": "Hindi", "ta-IN": "Tamil", "te-IN": "Telugu",
         "kn-IN": "Kannada", "mr-IN": "Marathi", "bn-IN": "Bengali",
         "gu-IN": "Gujarati", "pa-IN": "Punjabi", "ml-IN": "Malayalam",
         "od-IN": "Odia", "en-IN": "English",
-    }.get(lang, "English")
+    }
+    lang_name = lang_map.get(lang, "English")
+
+    # Language-specific filler/respectful words to override Hindi defaults in the prompt
+    lang_fillers = {
+        "hi-IN": "'जी', 'हाँ', 'अच्छा', 'जी हाँ', 'बताती हूँ'",
+        "ta-IN": "'சரி', 'ஆமா', 'சொல்றேன்', 'கொஞ்சம் பொறுங்க'",
+        "te-IN": "'అవునండి', 'చెప్తాను', 'సరే', 'అలాగే'",
+        "kn-IN": "'ಹೌದು', 'ಸರಿ', 'ಹೇಳ್ತೀನಿ', 'ಆಯ್ತು'",
+        "mr-IN": "'हो', 'बरोबर', 'सांगते', 'हो ना'",
+        "bn-IN": "'হ্যাঁ', 'বলছি', 'ঠিক আছে', 'আচ্ছা'",
+        "gu-IN": "'હા', 'સારું', 'કહું છું', 'ઠીક છે'",
+        "pa-IN": "'ਹਾਂ ਜੀ', 'ਦੱਸਦੀ ਹਾਂ', 'ਠੀਕ ਹੈ', 'ਅੱਛਾ'",
+        "ml-IN": "'ശരി', 'പറയാം', 'അതെ', 'ഒന്ന് കാത്തിരിക്കൂ'",
+        "od-IN": "'ହଁ', 'କହୁଛି', 'ଠିକ୍ ଅଛି', 'ଆଚ୍ଛା'",
+        "en-IN": "'yes', 'sure', 'let me check', 'of course'",
+    }
+    fillers = lang_fillers.get(lang, lang_fillers["en-IN"])
+
+    # Language-specific number formatting examples (words only, no digits)
+    lang_number_examples = {
+        "hi-IN": "say 'दो हज़ार रुपये क्विंटल' NOT '2000 रुपये'. Example: 'टमाटर का भाव अभी दो हज़ार रुपये क्विंटल चल रहा है, जी हाँ, दो हज़ार रुपये।'",
+        "ta-IN": "say 'இரண்டாயிரம் ரூபாய் குவிண்டால்' NOT '2000 ரூபாய்'. Example: 'தக்காளி விலை இப்போ இரண்டாயிரம் ரூபாய் குவிண்டால், ஆமா, இரண்டாயிரம் ரூபாய்.'",
+        "te-IN": "say 'రెండు వేల రూపాయలు క్వింటాల్' NOT '2000 రూపాయలు'. Example: 'టమాటా ధర ఇప్పుడు రెండు వేల రూపాయలు క్వింటాల్, అవునండి, రెండు వేలు.'",
+        "kn-IN": "say 'ಎರಡು ಸಾವಿರ ರೂಪಾಯಿ ಕ್ವಿಂಟಾಲ್' NOT '2000 ರೂಪಾಯಿ'. Example: 'ಟೊಮ್ಯಾಟೊ ಬೆಲೆ ಈಗ ಎರಡು ಸಾವಿರ ರೂಪಾಯಿ ಕ್ವಿಂಟಾಲ್.'",
+        "mr-IN": "say 'दोन हजार रुपये क्विंटल' NOT '2000 रुपये'. Example: 'टोमॅटोचा भाव आत्ता दोन हजार रुपये क्विंटल आहे, हो, दोन हजार रुपये.'",
+        "bn-IN": "say 'দুই হাজার টাকা কুইন্টাল' NOT '2000 টাকা'. Example: 'টমেটোর দাম এখন দুই হাজার টাকা কুইন্টাল, হ্যাঁ, দুই হাজার টাকা।'",
+        "gu-IN": "say 'બે હજાર રૂપિયા ક્વિન્ટલ' NOT '2000 રૂપિયા'. Example: 'ટામેટાનો ભાવ અત્યારે બે હજાર રૂપિયા ક્વિન્ટલ છે, હા, બે હજાર રૂપિયા.'",
+        "pa-IN": "say 'ਦੋ ਹਜ਼ਾਰ ਰੁਪਏ ਕੁਇੰਟਲ' NOT '2000 ਰੁਪਏ'. Example: 'ਟਮਾਟਰ ਦਾ ਭਾਅ ਹੁਣ ਦੋ ਹਜ਼ਾਰ ਰੁਪਏ ਕੁਇੰਟਲ ਹੈ, ਹਾਂ ਜੀ, ਦੋ ਹਜ਼ਾਰ ਰੁਪਏ.'",
+        "ml-IN": "say 'രണ്ടായിരം രൂപ ക്വിന്റൽ' NOT '2000 രൂപ'. Example: 'തക്കാളിയുടെ വില ഇപ്പോൾ രണ്ടായിരം രൂപ ക്വിന്റൽ ആണ്, അതെ, രണ്ടായിരം രൂപ.'",
+        "od-IN": "say 'ଦୁଇ ହଜାର ଟଙ୍କା କୁଇଣ୍ଟାଲ' NOT '2000 ଟଙ୍କା'. Example: 'ଟମାଟୋ ଦାମ ଏବେ ଦୁଇ ହଜାର ଟଙ୍କା କୁଇଣ୍ଟାଲ, ହଁ, ଦୁଇ ହଜାର ଟଙ୍କା।'",
+        "en-IN": "say 'two thousand rupees per quintal' NOT '2000 rupees'. Example: 'Tomato price is two thousand rupees per quintal right now, yes, two thousand rupees.'",
+    }
+    number_example = lang_number_examples.get(lang, lang_number_examples["en-IN"])
+
     profile_ctx = (
         f"Today's date: {today}. "
         f"Farmer profile — Name: {name}, State: {state}, District: {district}, "
         f"Crops: {crops or 'unknown'}, Land: {land_acres or 'unknown'} acres, Language: {lang_name}. "
-        f"Respond in {lang_name}. "
+        f"CRITICAL: You MUST respond ONLY in {lang_name}. Every word you say must be in {lang_name}. "
+        f"Do NOT use Hindi unless the farmer's language IS Hindi. "
         f"Greet them by name ONLY on the very first turn. After that, do NOT use their name in every response. "
-        f"Mix it up naturally — sometimes just answer directly, sometimes use respectful words like 'जी', 'हाँ', 'अच्छा', 'जी हाँ', 'बताती हूँ'. "
+        f"Mix it up naturally — sometimes just answer directly, sometimes use respectful words like {fillers}. "
         f"Use their name only occasionally, like real phone conversations. "
         f"When the farmer asks about prices, weather, etc. WITHOUT specifying a location, default to {state}, {district}. "
         f"But if they mention ANY other state, city, or district, use THAT location — do not restrict to {state}. "
-        f"When checking scheme eligibility, use the farmer's profile data directly — do NOT ask the farmer for information you already have (state, crops, land size)."
+        f"When checking scheme eligibility, use the farmer's profile data directly — do NOT ask the farmer for information you already have (state, crops, land size). "
+        f"Number formatting: {number_example}"
     )
     return SYSTEM_PROMPT + "\n\n" + profile_ctx
 
@@ -350,8 +386,16 @@ async def entrypoint(ctx: JobContext) -> None:
         demo_crops = [
             ("wheat", "Haryana"),
             ("rice", "Haryana"),
+            ("tomato", "Haryana"),
+            ("onion", "Haryana"),
+            ("mustard", "Haryana"),
+            ("potato", "Haryana"),
             ("tomato", "Telangana"),
             ("rice", "Telangana"),
+            ("onion", "Telangana"),
+            ("cotton", "Telangana"),
+            ("chilli", "Telangana"),
+            ("eggplant", "Telangana"),
         ]
         # Add user-specific data if returning user
         if profile and not is_onboarding:
@@ -397,6 +441,7 @@ async def entrypoint(ctx: JobContext) -> None:
 
     # ── Conversation turn tracking ──
     turn_counter = 0
+    user_has_spoken = False
 
     async def _save_turn(speaker: str, transcript: str, tool_called: str | None = None) -> None:
         nonlocal turn_counter
@@ -419,18 +464,25 @@ async def entrypoint(ctx: JobContext) -> None:
 
     # Handle LANG and PROFILE markers from onboarding + save conversation turns
     async def _handle_item_added(event):
-        nonlocal is_onboarding
+        nonlocal is_onboarding, user_has_spoken
         item = event.item
 
         # Save user and assistant message turns
         if isinstance(item, ChatMessage) and item.role in ("user", "assistant"):
             text = item.content[0] if isinstance(item.content, list) and item.content else ""
             text = str(text)
+
+            if item.role == "user" and text.strip():
+                user_has_spoken = True
+
             if text:
                 await _save_turn(item.role, text)
 
             # Check for END_CALL marker — auto-disconnect after farewell
-            if item.role == "assistant" and "<<<END_CALL>>>" in text:
+            # ONLY if the farmer has actually spoken at least once
+            if item.role == "assistant" and "<<<END_CALL>>>" in text and not user_has_spoken:
+                logger.warning("[end_call] ignoring END_CALL in greeting — farmer hasn't spoken yet")
+            elif item.role == "assistant" and "<<<END_CALL>>>" in text:
                 logger.info("[end_call] END_CALL marker detected, disconnecting in 5s")
                 async def _delayed_disconnect():
                     await asyncio.sleep(5)  # let TTS finish the farewell

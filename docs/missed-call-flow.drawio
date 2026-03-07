@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" version="29.6.1">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.6.1" pages="3">
   <diagram name="Missed Call Detection" id="missed-call">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="700" math="0" shadow="0">
+    <mxGraphModel dx="1543" dy="1035" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="700" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -11,42 +11,42 @@
           <mxGeometry height="25" width="600" x="400" y="50" as="geometry" />
         </mxCell>
         <mxCell id="farmer" parent="1" style="shape=mxgraph.basic.person;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;whiteSpace=wrap;" value="Farmer&#xa;(Any Phone)" vertex="1">
-          <mxGeometry height="120" width="100" x="80" y="200" as="geometry" />
+          <mxGeometry height="120" width="100" x="36" y="203" as="geometry" />
         </mxCell>
         <mxCell id="twilio" parent="1" style="rounded=1;html=1;fillColor=#e6d0de;strokeColor=#996185;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="Twilio&#xa;Phone Number&#xa;+91-XXX-XXXX" vertex="1">
-          <mxGeometry height="90" width="200" x="350" y="215" as="geometry" />
+          <mxGeometry height="90" width="200" x="350" y="216" as="geometry" />
         </mxCell>
         <mxCell id="nginx" parent="1" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;whiteSpace=wrap;arcSize=12;" value="Nginx&#xa;(gramsaathi.in)" vertex="1">
-          <mxGeometry height="70" width="160" x="700" y="225" as="geometry" />
+          <mxGeometry height="70" width="160" x="760" y="225" as="geometry" />
         </mxCell>
         <mxCell id="backend" parent="1" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="FastAPI Backend&#xa;POST /webhooks/missed-call" vertex="1">
-          <mxGeometry height="90" width="250" x="1010" y="215" as="geometry" />
+          <mxGeometry height="90" width="250" x="1140" y="218" as="geometry" />
         </mxCell>
-        <mxCell id="step1" edge="1" parent="1" source="farmer" target="twilio" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" value="">
+        <mxCell id="step1" edge="1" parent="1" source="farmer" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" target="twilio" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="step1_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontColor=#333333;" value="① Farmer Dials" vertex="1">
-          <mxGeometry height="28" width="120" x="195" y="222" as="geometry" />
+          <mxGeometry height="28" width="120" x="195" y="210" as="geometry" />
         </mxCell>
-        <mxCell id="step2" edge="1" parent="1" source="twilio" target="nginx" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#996185;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" value="">
+        <mxCell id="step2" edge="1" parent="1" source="twilio" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#996185;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" target="nginx" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="step2_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#e6d0de;strokeColor=#996185;rounded=1;fontColor=#333333;" value="② Webhook POST" vertex="1">
-          <mxGeometry height="28" width="140" x="575" y="228" as="geometry" />
+          <mxGeometry height="28" width="140" x="575" y="216" as="geometry" />
         </mxCell>
-        <mxCell id="step3" edge="1" parent="1" source="nginx" target="backend" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" value="">
+        <mxCell id="step3" edge="1" parent="1" source="nginx" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" target="backend" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="step3_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#f5f5f5;strokeColor=#666666;rounded=1;fontColor=#333333;" value="③ Proxy to :8000" vertex="1">
-          <mxGeometry height="28" width="140" x="880" y="228" as="geometry" />
+          <mxGeometry height="28" width="140" x="950" y="218" as="geometry" />
         </mxCell>
         <mxCell id="reject_box" parent="1" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;whiteSpace=wrap;arcSize=12;" value="④ Responds with TwiML:&#xa;&lt;Reject reason=&quot;busy&quot;/&gt;" vertex="1">
-          <mxGeometry height="70" width="250" x="1010" y="370" as="geometry" />
+          <mxGeometry height="70" width="250" x="1140" y="370" as="geometry" />
         </mxCell>
-        <mxCell id="step4" edge="1" parent="1" source="backend" target="reject_box" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" value="">
+        <mxCell id="step4" edge="1" parent="1" source="backend" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="reject_box" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="step5_back" edge="1" parent="1" source="reject_box" target="twilio" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=0;exitY=0.5;entryX=0.5;entryY=1;" value="">
+        <mxCell id="step5_back" edge="1" parent="1" source="reject_box" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=0;exitY=0.5;entryX=0.5;entryY=1;" target="twilio" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="450" y="405" />
@@ -56,11 +56,11 @@
         <mxCell id="step5_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;fontColor=#333333;" value="⑤ Reject Response" vertex="1">
           <mxGeometry height="28" width="140" x="620" y="391" as="geometry" />
         </mxCell>
-        <mxCell id="step6" edge="1" parent="1" source="twilio" target="farmer" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=0;exitY=0.7;entryX=1;entryY=0.7;" value="">
+        <mxCell id="step6" edge="1" parent="1" source="twilio" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=3;fontSize=12;fontStyle=1;fontColor=#333333;exitX=0;exitY=0.7;entryX=1;entryY=0.634;entryDx=0;entryDy=0;entryPerimeter=0;" target="farmer" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="step6_label" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;fontColor=#333333;" value="⑥ Call Ends (₹0)" vertex="1">
-          <mxGeometry height="28" width="140" x="195" y="280" as="geometry" />
+          <mxGeometry height="28" width="140" x="185" y="295" as="geometry" />
         </mxCell>
         <mxCell id="async_label" parent="1" style="text;html=1;fontSize=12;fontStyle=2;align=center;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;fontColor=#333333;" value="Meanwhile: Backend triggers async callback (see Callback Flow diagram)" vertex="1">
           <mxGeometry height="30" width="470" x="1010" y="460" as="geometry" />
@@ -76,6 +76,433 @@
         </mxCell>
         <mxCell id="leg_note" parent="legend" style="text;html=1;fontSize=10;align=left;fillColor=none;strokeColor=none;fontColor=#82b366;fontStyle=1;" value="The backend simultaneously fires an async task to call the farmer back via SIP (see callback-flow.drawio)" vertex="1">
           <mxGeometry height="20" width="700" x="10" y="52" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="FwcdLGgtwW7AMQralLCa" name="Call Back">
+    <mxGraphModel dx="1543" dy="1035" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-1" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a2e;" value="Automated Callback &amp; Voice Agent Connection" vertex="1">
+          <mxGeometry height="35" width="550" x="524" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-2" parent="1" style="text;html=1;fontSize=12;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#666666;" value="After rejecting the missed call, the backend automatically calls the farmer back and connects them to the AI voice agent" vertex="1">
+          <mxGeometry height="25" width="750" x="425" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-3" parent="1" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="FastAPI Backend&#xa;(async callback task)" vertex="1">
+          <mxGeometry height="80" width="220" x="31" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-4" parent="1" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="LiveKit Server&#xa;Room Management" vertex="1">
+          <mxGeometry height="80" width="200" x="40" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-5" parent="1" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="Voice Agent&#xa;(Gram Saathi)" vertex="1">
+          <mxGeometry height="80" width="200" x="500" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-6" parent="1" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="LiveKit SIP&#xa;Outbound Trunk" vertex="1">
+          <mxGeometry height="80" width="200" x="500" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-7" parent="1" style="rounded=1;html=1;fillColor=#e6d0de;strokeColor=#996185;fontStyle=1;fontSize=13;whiteSpace=wrap;arcSize=12;" value="Twilio&#xa;Elastic SIP Trunk" vertex="1">
+          <mxGeometry height="80" width="200" x="850" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-8" parent="1" style="shape=mxgraph.basic.person;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;whiteSpace=wrap;" value="Farmer&#xa;(Phone Rings)" vertex="1">
+          <mxGeometry height="120" width="100" x="1200" y="141" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-9" parent="1" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;whiteSpace=wrap;arcSize=12;" value="Sarvam STT&#xa;(saaras:v3)" vertex="1">
+          <mxGeometry height="60" width="150" x="850" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-10" parent="1" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;whiteSpace=wrap;arcSize=12;" value="AWS Bedrock&#xa;Nova Lite 2" vertex="1">
+          <mxGeometry height="60" width="150" x="850" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-11" parent="1" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;whiteSpace=wrap;arcSize=12;" value="Sarvam TTS&#xa;(bulbul:v3, ishita)" vertex="1">
+          <mxGeometry height="60" width="150" x="850" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-12" parent="1" style="rounded=1;html=1;fillColor=#e6f3ff;strokeColor=#6c8ebf;fontSize=11;whiteSpace=wrap;arcSize=12;" value="Tools: Mandi Prices | Weather | Schemes | Crop Advisory" vertex="1">
+          <mxGeometry height="40" width="380" x="1127" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-13" parent="1" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;whiteSpace=wrap;arcSize=12;" value="Farmer&#xa;(In Conversation)" vertex="1">
+          <mxGeometry height="60" width="150" x="1211" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-14" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-3" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#6c8ebf;strokeWidth=3;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="N4l-yTjA1KnFBUP57GRu-4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-15" parent="1" style="text;html=1;fontSize=11;fontStyle=1;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;fontColor=#333333;" value="① Create Room" vertex="1">
+          <mxGeometry height="26" width="120" x="160" y="257" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-16" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-4" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=3;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="N4l-yTjA1KnFBUP57GRu-5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-17" parent="1" style="text;html=1;fontSize=11;fontStyle=1;align=center;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontColor=#333333;" value="② Agent Dispatched" vertex="1">
+          <mxGeometry height="26" width="140" x="304" y="347" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-18" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-3" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#9673a6;strokeWidth=3;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="N4l-yTjA1KnFBUP57GRu-6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-19" parent="1" style="text;html=1;fontSize=11;fontStyle=1;align=center;fillColor=#e1d5e7;strokeColor=#9673a6;rounded=1;fontColor=#333333;" value="③ Create SIP Participant" vertex="1">
+          <mxGeometry height="26" width="170" x="289" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-20" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-6" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#9673a6;strokeWidth=3;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="N4l-yTjA1KnFBUP57GRu-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-21" parent="1" style="text;html=1;fontSize=11;fontStyle=1;align=center;fillColor=#e1d5e7;strokeColor=#9673a6;rounded=1;fontColor=#333333;" value="④ SIP INVITE" vertex="1">
+          <mxGeometry height="26" width="110" x="722" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-22" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-7" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#82b366;strokeWidth=3;exitX=1;exitY=0.5;entryX=0;entryY=0.4;" target="N4l-yTjA1KnFBUP57GRu-8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-23" parent="1" style="text;html=1;fontSize=11;fontStyle=1;align=center;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;fontColor=#333333;" value="⑤ Calls Farmer" vertex="1">
+          <mxGeometry height="26" width="120" x="1061" y="154" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-24" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-8" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#82b366;strokeWidth=2;dashed=1;exitX=0.5;exitY=1;entryX=1;entryY=0.5;" target="N4l-yTjA1KnFBUP57GRu-9" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1250" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-25" parent="1" style="text;html=1;fontSize=11;fontStyle=1;align=center;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;fontColor=#333333;" value="⑥ Farmer Speaks" vertex="1">
+          <mxGeometry height="26" width="130" x="1050" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-26" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-9" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#333333;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="N4l-yTjA1KnFBUP57GRu-10" value="text">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-27" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-10" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#333333;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="N4l-yTjA1KnFBUP57GRu-11" value="text">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-28" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-10" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#6c8ebf;strokeWidth=2;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="N4l-yTjA1KnFBUP57GRu-12" value="tool calls">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-29" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-11" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#82b366;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="N4l-yTjA1KnFBUP57GRu-13" value="audio">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-30" edge="1" parent="1" source="N4l-yTjA1KnFBUP57GRu-5" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="N4l-yTjA1KnFBUP57GRu-9" value="audio frames">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-31" parent="1" style="swimlane;html=1;startSize=0;fillColor=#fafafa;strokeColor=#cccccc;rounded=1;" value="" vertex="1">
+          <mxGeometry height="95" width="1200" x="40" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-32" parent="N4l-yTjA1KnFBUP57GRu-31" style="text;html=1;fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;" value="Callback Sequence (triggered after missed call rejection):" vertex="1">
+          <mxGeometry height="22" width="450" x="10" y="5" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-33" parent="N4l-yTjA1KnFBUP57GRu-31" style="text;html=1;fontSize=11;align=left;fillColor=none;strokeColor=none;fontColor=#333333;whiteSpace=wrap;" value="① Backend creates LiveKit room (2s delay after rejection)  →  ② Agent auto-dispatched into room  →  ③ Backend creates SIP participant via LiveKit API  →  ④ LiveKit SIP sends INVITE to Twilio  →  ⑤ Twilio calls the farmer&#39;s phone  →  ⑥ Farmer picks up, audio flows through voice pipeline" vertex="1">
+          <mxGeometry height="25" width="1170" x="10" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-34" parent="N4l-yTjA1KnFBUP57GRu-31" style="text;html=1;fontSize=11;align=left;fillColor=none;strokeColor=none;fontColor=#333333;whiteSpace=wrap;" value="Voice Pipeline: Farmer speaks → Sarvam STT (Hindi text) → AWS Bedrock Nova Lite 2 (reasoning + tool calls) → Sarvam TTS (Hindi audio) → Farmer hears" vertex="1">
+          <mxGeometry height="22" width="1000" x="10" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="N4l-yTjA1KnFBUP57GRu-35" parent="N4l-yTjA1KnFBUP57GRu-31" style="text;html=1;fontSize=10;align=left;fillColor=none;strokeColor=none;fontColor=#666666;" value="Agent greets proactively when farmer picks up. STT session starts only after farmer connects to preserve the ~70s streaming limit." vertex="1">
+          <mxGeometry height="20" width="800" x="10" y="72" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="rZLiyLtS2i5Dv-xqXp_N" name="System Design">
+    <mxGraphModel dx="771" dy="518" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="WZinHEruIRM54mhMWpV9-1" parent="1" style="shape=mxgraph.basic.person;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;whiteSpace=wrap;" value="Farmer&#xa;(Phone / SIP)" vertex="1">
+          <mxGeometry height="100" width="90" x="44" y="191" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-2" parent="1" style="shape=mxgraph.basic.person;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;whiteSpace=wrap;" value="Browser&#xa;(Web Test)" vertex="1">
+          <mxGeometry height="100" width="90" x="40" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-3" parent="1" style="shape=mxgraph.basic.person;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;whiteSpace=wrap;" value="Admin&#xa;(Dashboard)" vertex="1">
+          <mxGeometry height="100" width="90" x="40" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-4" parent="1" style="swimlane;html=1;startSize=35;fillColor=#f5f5f5;strokeColor=#333333;fontStyle=1;fontSize=14;fontColor=#333333;swimlaneLine=1;rounded=1;arcSize=6;" value="EC2 t3.medium  (ap-south-1 Mumbai)  —  Docker Compose" vertex="1">
+          <mxGeometry height="1030" width="1050" x="250" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-5" parent="WZinHEruIRM54mhMWpV9-4" style="swimlane;html=1;startSize=28;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;rounded=1;arcSize=8;" value="LiveKit Server  (Docker)" vertex="1">
+          <mxGeometry height="180" width="340" x="30" y="60" as="geometry">
+            <mxRectangle height="30" width="160" x="30" y="60" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-6" parent="WZinHEruIRM54mhMWpV9-5" style="text;html=1;fontSize=10;align=left;fillColor=none;strokeColor=none;" value=":7880  WebSocket (signaling)" vertex="1">
+          <mxGeometry height="22" width="300" x="15" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-7" parent="WZinHEruIRM54mhMWpV9-5" style="text;html=1;fontSize=10;align=left;fillColor=none;strokeColor=none;" value=":7882  UDP (RTP media)" vertex="1">
+          <mxGeometry height="22" width="300" x="15" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-8" parent="WZinHEruIRM54mhMWpV9-5" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" value="Room Management" vertex="1">
+          <mxGeometry height="32" width="130" x="15" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-9" parent="WZinHEruIRM54mhMWpV9-5" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" value="Audio Routing" vertex="1">
+          <mxGeometry height="32" width="130" x="165" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-10" parent="WZinHEruIRM54mhMWpV9-5" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" value="Voice Activity Detection (Silero)" vertex="1">
+          <mxGeometry height="28" width="280" x="15" y="142" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-11" parent="WZinHEruIRM54mhMWpV9-4" style="swimlane;html=1;startSize=28;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;rounded=1;arcSize=8;" value="LiveKit Agent Worker  (Voice Pipeline)" vertex="1">
+          <mxGeometry height="270" width="600" x="30" y="305" as="geometry">
+            <mxRectangle height="30" width="240" x="30" y="305" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-12" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;whiteSpace=wrap;" value="OnboardingAgent&#xa;(first-time callers)" vertex="1">
+          <mxGeometry height="44" width="160" x="20" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-13" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;whiteSpace=wrap;" value="GramSaathiAgent&#xa;(returning farmers)" vertex="1">
+          <mxGeometry height="44" width="160" x="210" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-14" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;whiteSpace=wrap;" value="_strip_markers&#xa;(TTS filter)" vertex="1">
+          <mxGeometry height="44" width="140" x="400" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-15" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;whiteSpace=wrap;" value="Sarvam STT&#xa;saaras:v3" vertex="1">
+          <mxGeometry height="50" width="140" x="20" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-16" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;whiteSpace=wrap;" value="Bedrock LLM&lt;br&gt;Nova Lite 2" vertex="1">
+          <mxGeometry height="50" width="150" x="210" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-17" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;whiteSpace=wrap;" value="Sarvam TTS&#xa;bulbul:v3 (ishita)" vertex="1">
+          <mxGeometry height="50" width="140" x="410" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-18" edge="1" parent="WZinHEruIRM54mhMWpV9-11" source="WZinHEruIRM54mhMWpV9-15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#333333;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="WZinHEruIRM54mhMWpV9-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-19" connectable="0" parent="WZinHEruIRM54mhMWpV9-18" style="edgeLabel;html=1;fontSize=9;fontColor=#666666;" value="text" vertex="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-20" edge="1" parent="WZinHEruIRM54mhMWpV9-11" source="WZinHEruIRM54mhMWpV9-16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#333333;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="WZinHEruIRM54mhMWpV9-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-21" connectable="0" parent="WZinHEruIRM54mhMWpV9-20" style="edgeLabel;html=1;fontSize=9;fontColor=#666666;" value="text" vertex="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-22" parent="WZinHEruIRM54mhMWpV9-11" style="text;html=1;fontSize=11;fontStyle=5;align=left;fillColor=none;strokeColor=none;fontColor=#666666;" value="Function Tools" vertex="1">
+          <mxGeometry height="20" width="120" x="20" y="178" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-23" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#e6f3ff;strokeColor=#6c8ebf;fontSize=10;" value="get_weather_forecast" vertex="1">
+          <mxGeometry height="30" width="140" x="20" y="202" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-24" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#e6f3ff;strokeColor=#6c8ebf;fontSize=10;" value="get_mandi_prices" vertex="1">
+          <mxGeometry height="30" width="130" x="175" y="202" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-25" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#e6f3ff;strokeColor=#6c8ebf;fontSize=10;" value="check_scheme_eligibility" vertex="1">
+          <mxGeometry height="30" width="160" x="320" y="202" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-26" parent="WZinHEruIRM54mhMWpV9-11" style="rounded=1;html=1;fillColor=#e6f3ff;strokeColor=#6c8ebf;fontSize=10;" value="get_crop_advisory" vertex="1">
+          <mxGeometry height="28" width="140" x="20" y="237" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-27" parent="WZinHEruIRM54mhMWpV9-4" style="swimlane;html=1;startSize=28;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;rounded=1;arcSize=8;" value="FastAPI Backend  :8000" vertex="1">
+          <mxGeometry height="130" width="435" x="540" y="640" as="geometry">
+            <mxRectangle height="30" width="170" x="560" y="647" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-28" parent="WZinHEruIRM54mhMWpV9-27" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;whiteSpace=wrap;" value="/api/dashboard/*&#xa;Stats, Calls, Users" vertex="1">
+          <mxGeometry height="44" width="130" x="15" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-29" parent="WZinHEruIRM54mhMWpV9-27" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;whiteSpace=wrap;" value="/webhooks/*&#xa;Call lifecycle" vertex="1">
+          <mxGeometry height="44" width="120" x="160" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-30" parent="WZinHEruIRM54mhMWpV9-27" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;whiteSpace=wrap;" value="/test&#xa;Voice test page" vertex="1">
+          <mxGeometry height="44" width="120" x="295" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-31" parent="WZinHEruIRM54mhMWpV9-27" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;" value="AWS Translate" vertex="1">
+          <mxGeometry height="28" width="100" x="15" y="94" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-32" parent="WZinHEruIRM54mhMWpV9-4" style="shape=cylinder3;html=1;size=12;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;whiteSpace=wrap;" value="PostgreSQL&#xa;:5432" vertex="1">
+          <mxGeometry height="90" width="140" x="765" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-81" edge="1" parent="WZinHEruIRM54mhMWpV9-4" source="WZinHEruIRM54mhMWpV9-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;" target="WZinHEruIRM54mhMWpV9-27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-33" parent="WZinHEruIRM54mhMWpV9-4" style="swimlane;html=1;startSize=28;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;rounded=1;arcSize=8;" value="Next.js Dashboard  :3000" vertex="1">
+          <mxGeometry height="270" width="310" x="60" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-34" parent="WZinHEruIRM54mhMWpV9-33" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Overview" vertex="1">
+          <mxGeometry height="28" width="110" x="20" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-35" parent="WZinHEruIRM54mhMWpV9-33" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Live Monitor" vertex="1">
+          <mxGeometry height="28" width="120" x="170" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-36" parent="WZinHEruIRM54mhMWpV9-33" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Call History" vertex="1">
+          <mxGeometry height="28" width="110" x="20" y="82" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-37" parent="WZinHEruIRM54mhMWpV9-33" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="User Profiles" vertex="1">
+          <mxGeometry height="28" width="120" x="170" y="82" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-38" parent="WZinHEruIRM54mhMWpV9-33" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Analytics" vertex="1">
+          <mxGeometry height="28" width="110" x="20" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-39" parent="WZinHEruIRM54mhMWpV9-33" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="System Health" vertex="1">
+          <mxGeometry height="28" width="120" x="170" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-40" parent="WZinHEruIRM54mhMWpV9-33" style="text;html=1;fontSize=9;align=center;fillColor=none;strokeColor=none;fontColor=#666666;whiteSpace=wrap;" value="React 19  |  TanStack Query  |  Recharts&#xa;shadcn/ui  |  Tailwind CSS v4" vertex="1">
+          <mxGeometry height="30" width="260" x="20" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-41" parent="WZinHEruIRM54mhMWpV9-33" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;fontStyle=2;" value="11 Indian Languages Supported" vertex="1">
+          <mxGeometry height="28" width="280" x="10" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-42" edge="1" parent="WZinHEruIRM54mhMWpV9-4" source="WZinHEruIRM54mhMWpV9-5" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#9673a6;strokeWidth=2;fontSize=10;fontColor=#666666;exitX=0.5;exitY=1;entryX=0.284;entryY=0.009;entryDx=0;entryDy=0;entryPerimeter=0;" target="WZinHEruIRM54mhMWpV9-11" value="audio frames">
+          <mxGeometry relative="1" x="-0.1154" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-43" edge="1" parent="WZinHEruIRM54mhMWpV9-4" source="WZinHEruIRM54mhMWpV9-11" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#9673a6;strokeWidth=2;fontSize=10;fontColor=#666666;exitX=0.75;exitY=0;entryX=0;entryY=0.5;exitDx=0;exitDy=0;fillColor=#e1d5e7;" target="WZinHEruIRM54mhMWpV9-32" value="async writes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-44" edge="1" parent="WZinHEruIRM54mhMWpV9-4" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#6c8ebf;strokeWidth=1;fontSize=10;fontColor=#666666;entryX=0;entryY=0.5;" target="WZinHEruIRM54mhMWpV9-27" value="REST API">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="410" y="712" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-45" edge="1" parent="WZinHEruIRM54mhMWpV9-4" source="WZinHEruIRM54mhMWpV9-47" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=2;dashed=1;fontSize=10;fontColor=#666666;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="WZinHEruIRM54mhMWpV9-32" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1040" y="757" as="sourcePoint" />
+            <mxPoint x="830" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-46" edge="1" parent="WZinHEruIRM54mhMWpV9-4" source="WZinHEruIRM54mhMWpV9-27" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#666666;strokeWidth=2;dashed=1;fontSize=10;fontColor=#666666;exitX=0.544;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="WZinHEruIRM54mhMWpV9-47" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1085" y="757" as="sourcePoint" />
+            <mxPoint x="1085" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-47" parent="WZinHEruIRM54mhMWpV9-4" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b style=&quot;color: rgb(102, 102, 102); font-size: 10px;&quot;&gt;Users Profile&lt;/b&gt;&lt;b style=&quot;color: rgb(102, 102, 102); font-size: 10px;&quot;&gt;&lt;br&gt;Call Logs&amp;nbsp;&lt;/b&gt;&lt;br style=&quot;color: rgb(102, 102, 102); font-size: 10px;&quot;&gt;&lt;b style=&quot;color: rgb(102, 102, 102); font-size: 10px;&quot;&gt;Conversation Transcripts&lt;/b&gt;" vertex="1">
+          <mxGeometry height="47" width="200" x="735" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-48" parent="WZinHEruIRM54mhMWpV9-4" style="swimlane;html=1;startSize=26;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;rounded=1;arcSize=8;" value="LiveKit SIP" vertex="1">
+          <mxGeometry height="115" width="210" x="410" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-49" parent="WZinHEruIRM54mhMWpV9-48" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" value="Outbound SIP Trunk" vertex="1">
+          <mxGeometry height="30" width="180" x="15" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-50" parent="WZinHEruIRM54mhMWpV9-48" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" value="SIP ↔ WebRTC Bridge" vertex="1">
+          <mxGeometry height="30" width="180" x="15" y="74" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-51" edge="1" parent="WZinHEruIRM54mhMWpV9-4" source="WZinHEruIRM54mhMWpV9-5" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#9673a6;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="WZinHEruIRM54mhMWpV9-48" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-52" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#333333;" value="External APIs" vertex="1">
+          <mxGeometry height="35" width="200" x="1500" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-53" parent="1" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=0;fontSize=11;whiteSpace=wrap;" value="AWS Bedrock&#xa;Nova Lite 2&#xa;Converse API (non-streaming)&#xa;Tool use support" vertex="1">
+          <mxGeometry height="90" width="220" x="1480" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-54" parent="1" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=0;fontSize=11;whiteSpace=wrap;" value="Sarvam AI&#xa;STT: saaras:v3 (WebSocket)&#xa;TTS: bulbul:v3 (WebSocket)&#xa;Voice: ishita (female)" vertex="1">
+          <mxGeometry height="90" width="220" x="1480" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-55" parent="1" style="rounded=1;html=1;fillColor=#e6f3ff;strokeColor=#6c8ebf;fontStyle=0;fontSize=11;whiteSpace=wrap;" value="data.gov.in&#xa;Mandi commodity prices&#xa;Cache: 30min TTL" vertex="1">
+          <mxGeometry height="70" width="220" x="1480" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-56" parent="1" style="rounded=1;html=1;fillColor=#e6f3ff;strokeColor=#6c8ebf;fontStyle=0;fontSize=11;whiteSpace=wrap;" value="Open-Meteo&#xa;Geocoding + Weather forecast&#xa;Cache: 2hr TTL  |  Free, no key" vertex="1">
+          <mxGeometry height="70" width="220" x="1480" y="574" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-57" parent="1" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=0;fontSize=11;whiteSpace=wrap;" value="Local JSON Data&#xa;schemes.json (45 schemes)&#xa;15 central + 30 state (15 states)" vertex="1">
+          <mxGeometry height="70" width="220" x="1480" y="684" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-58" parent="1" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=0;fontSize=11;whiteSpace=wrap;" value="AWS Translate&#xa;Transcript translation" vertex="1">
+          <mxGeometry height="55" width="220" x="1480" y="795" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-59" parent="1" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=0;fontSize=11;whiteSpace=wrap;" value="Twilio&#xa;Phone Number +&#xa;Elastic SIP Trunk" vertex="1">
+          <mxGeometry height="75" width="155" x="10" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-60" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=2;dashed=1;dashPattern=8 4;fontSize=9;fontColor=#b85450;exitX=0.918;exitY=1.019;entryX=0.75;entryY=0;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitPerimeter=0;" target="WZinHEruIRM54mhMWpV9-59" value="① Missed Call">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-61" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-59" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=2;dashed=1;dashPattern=8 4;fontSize=9;fontColor=#b85450;exitX=1;exitY=0.7;entryX=0;entryY=0.5;" target="WZinHEruIRM54mhMWpV9-27" value="② Webhook">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="225" y="413" />
+              <mxPoint x="225" y="822" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-62" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-27" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=2;dashed=1;dashPattern=8 4;fontSize=9;fontColor=#b85450;exitX=0.5;exitY=0;entryX=0.75;entryY=1;" target="WZinHEruIRM54mhMWpV9-5" value="③ Create Room + Dial">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1008" y="385" />
+              <mxPoint x="535" y="385" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-63" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-48" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=2;dashed=1;dashPattern=8 4;fontSize=9;fontColor=#b85450;exitX=0;exitY=0.5;entryX=1;entryY=0.3;" target="WZinHEruIRM54mhMWpV9-59" value="④ SIP INVITE">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-64" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-59" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#82b366;strokeWidth=2;dashed=1;dashPattern=8 4;fontSize=9;fontColor=#b85450;exitX=0.3;exitY=0;entryX=0.135;entryY=0.985;entryDx=0;entryDy=0;entryPerimeter=0;" target="WZinHEruIRM54mhMWpV9-1" value="⑤ Callback">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-65" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#d6b656;strokeWidth=2;fontSize=10;fontColor=#666666;exitX=1;exitY=0.5;entryX=0;entryY=0.4;" target="WZinHEruIRM54mhMWpV9-5" value="SIP / WebRTC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-66" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-2" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#6c8ebf;strokeWidth=2;fontSize=10;fontColor=#666666;exitX=1;exitY=0.3;entryX=0;entryY=0.8;" target="WZinHEruIRM54mhMWpV9-5" value="WebSocket">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-67" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-3" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontColor=#666666;exitX=1;exitY=0.5;entryX=0;entryY=0.6;" target="WZinHEruIRM54mhMWpV9-33" value="HTTPS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-68" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-11" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=2;fontSize=10;fontColor=#666666;exitX=1;exitY=0.2;entryX=0;entryY=0.5;" target="WZinHEruIRM54mhMWpV9-53" value="Converse API">
+          <mxGeometry relative="1" x="-0.1439" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="880" y="478" />
+              <mxPoint x="1350" y="478" />
+              <mxPoint x="1350" y="225" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-69" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-11" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontColor=#666666;exitX=1;exitY=0.4;entryX=0;entryY=0.5;" target="WZinHEruIRM54mhMWpV9-54" value="WebSocket streaming">
+          <mxGeometry relative="1" x="-0.0234" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="880" y="508" />
+              <mxPoint x="1400" y="508" />
+              <mxPoint x="1400" y="355" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-70" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-11" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#6c8ebf;strokeWidth=1;fontSize=10;fontColor=#666666;exitX=1;exitY=0.6;entryX=0;entryY=0.5;" target="WZinHEruIRM54mhMWpV9-55" value="HTTP">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1440" y="538" />
+              <mxPoint x="1440" y="475" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-71" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-11" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#6c8ebf;strokeWidth=1;fontSize=10;fontColor=#666666;exitX=1;exitY=0.8;" value="HTTP">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="620" />
+              <mxPoint x="1460" y="620" />
+              <mxPoint x="1460" y="600" />
+              <mxPoint x="1480" y="600" />
+            </Array>
+            <mxPoint x="1480" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-72" edge="1" parent="1" source="WZinHEruIRM54mhMWpV9-27" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#b85450;strokeWidth=1;fontSize=10;fontColor=#666666;exitX=1;exitY=0.5;entryX=0;entryY=0.5;exitDx=0;exitDy=0;" target="WZinHEruIRM54mhMWpV9-58" value="HTTP">
+          <mxGeometry relative="1" x="-0.0078" y="4" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1270" y="823" />
+              <mxPoint x="1500" y="823" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-73" parent="1" style="swimlane;html=1;startSize=0;fillColor=#fafafa;strokeColor=#cccccc;rounded=1;" value="" vertex="1">
+          <mxGeometry height="105" width="1050" x="245" y="1150" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-74" parent="WZinHEruIRM54mhMWpV9-73" style="text;html=1;fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;" value="Voice Pipeline Flow:" vertex="1">
+          <mxGeometry height="22" width="150" x="15" y="8" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-75" parent="WZinHEruIRM54mhMWpV9-73" style="text;html=1;fontSize=11;align=left;fillColor=none;strokeColor=none;fontColor=#333333;whiteSpace=wrap;" value="Farmer speaks  →  LiveKit (VAD + audio)  →  Sarvam STT (Hindi text)  →  Bedrock Llama 3.3 (reasoning + tool calls)  →  _strip_markers (filter)  →  Sarvam TTS (Hindi audio)  →  LiveKit  →  Farmer hears" vertex="1">
+          <mxGeometry height="22" width="1000" x="15" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-76" parent="WZinHEruIRM54mhMWpV9-73" style="text;html=1;fontSize=11;align=left;fillColor=none;strokeColor=none;fontColor=#666666;" value="Target latency:  STT &lt;500ms  |  LLM &lt;2s  |  TTS streaming  |  Total voice round-trip &lt;3s" vertex="1">
+          <mxGeometry height="22" width="700" x="15" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-77" parent="WZinHEruIRM54mhMWpV9-73" style="text;html=1;fontSize=11;align=left;fillColor=none;strokeColor=none;fontColor=#b85450;whiteSpace=wrap;" value="Missed Call Flow (dashed):  ① Farmer dials Twilio  →  ② Twilio POSTs webhook  →  ③ Backend creates room + SIP participant  →  ④ LiveKit SIP dials Twilio  →  ⑤ Farmer gets callback" vertex="1">
+          <mxGeometry height="22" width="1020" x="15" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-78" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="70" width="800" x="370" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-79" parent="WZinHEruIRM54mhMWpV9-78" style="text;html=1;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a2e;" value="Gram Sathi — System Architecture" vertex="1">
+          <mxGeometry height="50" width="800" as="geometry" />
+        </mxCell>
+        <mxCell id="WZinHEruIRM54mhMWpV9-80" parent="WZinHEruIRM54mhMWpV9-78" style="text;html=1;fontSize=13;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#666666;" value="Voice AI Assistant for Indian Farmers  |  Single EC2 Deployment (t3.medium, ap-south-1)" vertex="1">
+          <mxGeometry height="30" width="800" y="40" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
