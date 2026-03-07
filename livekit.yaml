@@ -3,7 +3,6 @@ rtc:
   port_range_start: 10000
   port_range_end: 20000
   use_external_ip: true
-sip:
-  port: 5060
+sip: {}
 keys:
   devkey: secret
