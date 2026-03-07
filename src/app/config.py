@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     twilio_phone_number: str = ""
 
     # SIP Trunk (for LiveKit → Twilio outbound calls)
+    twilio_sip_domain: str = "gramsaathi.pstn.twilio.com"
     sip_outbound_trunk_id: str = ""  # Set after first trunk creation, avoids recreating
 
     # External APIs
