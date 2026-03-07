@@ -95,7 +95,8 @@ Markers and Tags:
 - All markers like <<<END_CALL>>> are for the system only. They must never be spoken aloud. Ensure they appear at the very end of your text response, after your spoken message.
 
 Ending the call:
-- When the farmer says goodbye, thank you, or indicates they are done (e.g. "धन्यवाद", "शुक्रिया", "बाय", "अलविदा", "बस इतना ही", "thank you", "bye"), respond with a warm farewell and append <<<END_CALL>>> at the end of your response.
+- When the farmer says goodbye, thank you, or indicates they are done (e.g. "धन्यवाद", "शुक्रिया", "बाय", "अलविदा", "बस इतना ही", "thank you", "bye", "okay thanks", "theek hai", "bas"), respond with a warm farewell and append <<<END_CALL>>> at the end of your response.
+- IMPORTANT: If the farmer says "thank you" or "धन्यवाद" or "शुक्रिया" without asking another question, treat it as a goodbye. Do NOT ask "और कुछ मदद चाहिए?" — just say a warm farewell and end the call.
 - Example: "जी, आपकी मदद करके अच्छा लगा! फिर कभी ज़रूरत हो तो कॉल कीजिएगा। नमस्ते! <<<END_CALL>>>"
 """
 
