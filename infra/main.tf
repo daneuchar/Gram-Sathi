@@ -38,6 +38,10 @@ data "aws_ami" "ubuntu" {
 resource "aws_key_pair" "gram_sathi" {
   key_name   = "gram-sathi-key"
   public_key = file(pathexpand(var.ssh_public_key_path))
+
+  lifecycle {
+    ignore_changes = [public_key]
+  }
 }
 
 # Security Group
@@ -67,6 +71,14 @@ resource "aws_security_group" "gram_sathi" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.your_ip_cidr]
+  }
+
+  ingress {
+    description = "dan ssh"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["49.206.48.68/32"]
   }
 
   ingress {
@@ -415,5 +427,9 @@ resource "aws_instance" "gram_sathi" {
 
   tags = {
     Name = "gram-sathi"
+  }
+
+  lifecycle {
+    ignore_changes = [user_data]
   }
 }
