@@ -492,19 +492,27 @@ async def entrypoint(ctx: JobContext) -> None:
     # doesn't waste its ~70s Sarvam timeout waiting for the farmer to pick up.
     is_sip_callback = ctx.room.name.startswith("gram-saathi-callback-")
     if is_sip_callback:
-        farmer_connected = asyncio.Event()
+        # Check if a non-agent participant is already connected
+        farmer_already_here = any(
+            p.kind != rtc.ParticipantKind.PARTICIPANT_KIND_AGENT
+            for p in ctx.room.remote_participants.values()
+        )
+        if not farmer_already_here:
+            farmer_connected = asyncio.Event()
 
-        @ctx.room.on("participant_connected")
-        def _on_farmer_connected(participant):
-            logger.info("[sip-callback] farmer connected: %s", participant.identity)
-            farmer_connected.set()
+            @ctx.room.on("participant_connected")
+            def _on_farmer_connected(participant):
+                logger.info("[sip-callback] farmer connected: %s", participant.identity)
+                farmer_connected.set()
 
-        logger.info("[sip-callback] waiting for farmer to connect before starting session...")
-        try:
-            await asyncio.wait_for(farmer_connected.wait(), timeout=60)
-        except (TimeoutError, asyncio.TimeoutError):
-            logger.warning("[sip-callback] farmer never connected, aborting")
-            return
+            logger.info("[sip-callback] waiting for farmer to connect before starting session...")
+            try:
+                await asyncio.wait_for(farmer_connected.wait(), timeout=60)
+            except (TimeoutError, asyncio.TimeoutError):
+                logger.warning("[sip-callback] farmer never connected, aborting")
+                return
+        else:
+            logger.info("[sip-callback] farmer already in room, starting immediately")
 
     await session.start(agent=agent, room=ctx.room)
 
