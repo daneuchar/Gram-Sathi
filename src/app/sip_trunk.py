@@ -27,6 +27,9 @@ async def ensure_sip_trunk() -> str:
         logger.info("[sip] using pre-configured trunk: %s", _trunk_id)
         return _trunk_id
 
+    if not settings.twilio_account_sid or not settings.twilio_auth_token:
+        raise RuntimeError("[sip] TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN must be set for SIP trunk")
+
     livekit_url = settings.livekit_url or "ws://localhost:7880"
 
     async with LiveKitAPI(
