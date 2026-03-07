@@ -304,6 +304,7 @@ async def entrypoint(ctx: JobContext) -> None:
         target_language_code=language,
         speaker="ishita",
         api_key=settings.sarvam_api_key,
+        max_chunk_length=500,
     )
 
     common_kwargs = dict(
