@@ -159,14 +159,21 @@ def _is_tool_call_json(text: str) -> bool:
     return False
 
 
+_TTS_REPLACEMENTS = {
+    "मंडी": "मण्डी",
+}
+
+
 def _clean_for_tts(text: str) -> str:
-    """Remove markdown formatting and other artifacts that break TTS."""
+    """Remove markdown formatting and fix TTS pronunciation issues."""
     text = _MARKDOWN_RE.sub(r'\1', text)  # **bold** / *italic* → text
     text = re.sub(r'^#{1,6}\s*', '', text, flags=re.MULTILINE)  # # headers
     text = re.sub(r'[`~]{3,}.*', '', text)  # code fences
     text = text.replace('`', '')  # inline code
     text = re.sub(r'\n{2,}', '. ', text)  # double newlines → period
     text = text.replace('\n', ' ')  # single newlines → space
+    for wrong, right in _TTS_REPLACEMENTS.items():
+        text = text.replace(wrong, right)
     return text.strip()
 
 
