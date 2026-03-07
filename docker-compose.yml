@@ -21,11 +21,21 @@ services:
       - "7880:7880"
       - "7881:7881"
       - "7882:7882/udp"
-      - "5060:5060/udp"
-      - "5060:5060/tcp"
     volumes:
       - ./livekit.yaml:/etc/livekit.yaml
     command: --config /etc/livekit.yaml --node-ip ${PUBLIC_IP:-0.0.0.0} --bind 0.0.0.0
+
+  livekit-sip:
+    image: livekit/sip
+    network_mode: host
+    environment:
+      - LIVEKIT_URL=ws://127.0.0.1:7880
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=secret
+      - SIP_PORT=5060
+    depends_on:
+      livekit:
+        condition: service_started
 
   backend:
     build: .
