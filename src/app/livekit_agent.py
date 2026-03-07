@@ -288,7 +288,7 @@ async def entrypoint(ctx: JobContext) -> None:
     tts_plugin = sarvam.TTS(
         model="bulbul:v3",
         target_language_code=language,
-        speaker="priya",
+        speaker="ishita",
         api_key=settings.sarvam_api_key,
     )
 
