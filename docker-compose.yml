@@ -21,7 +21,11 @@ services:
       - "7880:7880"
       - "7881:7881"
       - "7882:7882/udp"
-    command: --dev --node-ip ${PUBLIC_IP:-0.0.0.0} --bind 0.0.0.0
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
+    command: --config /etc/livekit.yaml --node-ip ${PUBLIC_IP:-0.0.0.0} --bind 0.0.0.0
 
   backend:
     build: .
