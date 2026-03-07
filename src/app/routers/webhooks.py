@@ -1,13 +1,20 @@
+"""Twilio webhooks — missed call detection and SIP callback."""
+import asyncio
 import logging
+import time
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import Response
-from sqlalchemy.ext.asyncio import AsyncSession
+
+from livekit.api import (
+    LiveKitAPI,
+    CreateRoomRequest,
+    CreateSIPParticipantRequest,
+    RoomAgentDispatch,
+)
 
 from app.config import settings
-from app.database import get_db
-from app.models.call_log import CallLog
-from app.models.user import User
+from app.sip_trunk import ensure_sip_trunk
 
 logger = logging.getLogger(__name__)
 
@@ -22,50 +29,85 @@ async def _get_params(request: Request) -> dict:
     return dict(request.query_params)
 
 
-@router.api_route("/inbound-call", methods=["GET", "POST"])
-async def inbound_call(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-):
+@router.api_route("/missed-call", methods=["GET", "POST"])
+async def missed_call(request: Request):
+    """Handle incoming Twilio call — reject it, then call back via SIP.
+
+    Twilio sends this webhook when a call comes in. We reject immediately
+    (farmer pays nothing), then initiate a callback via LiveKit SIP.
+    """
     params = await _get_params(request)
-    call_sid = params.get("CallSid", "")
     from_number = params.get("From", "")
+    call_sid = params.get("CallSid", "")
 
-    # Auto-create user on first call
-    existing = await db.get(User, from_number)
-    if not existing:
-        db.add(User(phone=from_number))
-        await db.flush()
+    logger.info("[missed-call] incoming from %s (CallSid=%s)", from_number, call_sid)
 
-    db.add(CallLog(call_sid=call_sid, phone=from_number, direction="inbound", status="in-progress"))
-    await db.commit()
+    if not from_number:
+        logger.warning("[missed-call] no From number, ignoring")
+        return Response(
+            content='<?xml version="1.0"?><Response><Reject/></Response>',
+            media_type="text/xml",
+        )
 
-    ws_url = f"{settings.public_url.replace('https://', 'wss://')}/telephone/handler"
-    twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Connect>
-    <Stream url="{ws_url}" />
-  </Connect>
-</Response>"""
+    # Reject the call immediately — farmer pays nothing
+    # Then trigger async callback
+    asyncio.create_task(_callback_farmer(from_number))
 
-    logger.info("Inbound call %s from %s → streaming to %s", call_sid, from_number, ws_url)
-    return Response(content=twiml, media_type="text/xml")
+    return Response(
+        content='<?xml version="1.0"?><Response><Reject reason="busy"/></Response>',
+        media_type="text/xml",
+    )
+
+
+async def _callback_farmer(phone: str) -> None:
+    """Create a LiveKit room and dial the farmer back via SIP."""
+    # Small delay so Twilio fully processes the rejected call
+    await asyncio.sleep(2)
+
+    room_name = f"gram-saathi-callback-{int(time.time())}"
+    livekit_url = settings.livekit_url or "ws://localhost:7880"
+
+    try:
+        trunk_id = await ensure_sip_trunk()
+
+        async with LiveKitAPI(
+            url=livekit_url,
+            api_key=settings.livekit_api_key,
+            api_secret=settings.livekit_api_secret,
+        ) as api:
+            # Create room with agent dispatch
+            await api.room.create_room(CreateRoomRequest(
+                name=room_name,
+                empty_timeout=300,
+                metadata=phone,  # Agent reads phone from room metadata
+                agents=[RoomAgentDispatch(agent_name="")],
+            ))
+            logger.info("[callback] room created: %s", room_name)
+
+            # Create SIP participant — LiveKit dials the farmer via Twilio
+            sip_info = await api.sip.create_sip_participant(
+                CreateSIPParticipantRequest(
+                    sip_trunk_id=trunk_id,
+                    sip_call_to=phone,
+                    room_name=room_name,
+                    participant_identity=f"phone-{phone}",
+                    participant_name="Farmer",
+                    participant_metadata=phone,
+                    play_ringtone=True,
+                    krisp_enabled=True,
+                ),
+            )
+            logger.info("[callback] SIP participant created: %s → %s", sip_info.participant_id, phone)
+
+    except Exception:
+        logger.exception("[callback] failed to call back %s", phone)
 
 
 @router.api_route("/call-status", methods=["GET", "POST"])
-async def call_status(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-):
+async def call_status(request: Request):
+    """Twilio call status callback (optional, for logging)."""
     params = await _get_params(request)
     call_sid = params.get("CallSid", "")
     status = params.get("CallStatus", "")
-    duration = int(params.get("CallDuration", 0))
-
-    record = await db.get(CallLog, call_sid)
-    if record:
-        record.status = status
-        record.duration_seconds = duration
-        await db.commit()
-
+    logger.info("[call-status] %s → %s", call_sid, status)
     return Response(content="<Response/>", media_type="text/xml")
