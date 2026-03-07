@@ -28,11 +28,8 @@ services:
   livekit-sip:
     image: livekit/sip
     network_mode: host
-    environment:
-      - LIVEKIT_URL=ws://127.0.0.1:7880
-      - LIVEKIT_API_KEY=devkey
-      - LIVEKIT_API_SECRET=secret
-      - SIP_PORT=5060
+    volumes:
+      - ./sip-config.yaml:/sip/config.yaml
     depends_on:
       livekit:
         condition: service_started
