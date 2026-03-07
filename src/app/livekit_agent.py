@@ -311,13 +311,15 @@ async def entrypoint(ctx: JobContext) -> None:
         api_key=settings.sarvam_api_key,
     )
 
-    # TTS: Sarvam bulbul with female voice
+    # TTS: Sarvam bulbul with female voice (8kHz for SIP/phone calls)
     tts_plugin = sarvam.TTS(
         model="bulbul:v3",
         target_language_code=language,
         speaker="ishita",
         api_key=settings.sarvam_api_key,
         max_chunk_length=500,
+        pace=1.1,
+        speech_sample_rate=8000,
     )
 
     common_kwargs = dict(
