@@ -489,6 +489,9 @@ async def entrypoint(ctx: JobContext) -> None:
 
     await session.start(agent=agent, room=ctx.room)
 
+    # Proactive greeting — agent speaks first without waiting for farmer
+    session.generate_reply()
+
 
 if __name__ == "__main__":
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
